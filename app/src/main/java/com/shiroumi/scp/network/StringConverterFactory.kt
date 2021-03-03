@@ -7,6 +7,8 @@ import retrofit2.Converter
 import retrofit2.Retrofit
 import java.lang.reflect.Type
 
+private val MEDIA_TYPE: MediaType? = MediaType.parse("text/plain")
+
 class StringConverterFactory : Converter.Factory() {
     override fun responseBodyConverter(
         type: Type,
@@ -14,7 +16,7 @@ class StringConverterFactory : Converter.Factory() {
         retrofit: Retrofit
     ): Converter<ResponseBody, *>? {
         return if (String::class.java == type) {
-            Converter { value -> value.string() }
+            Converter<ResponseBody, String?> { value -> value.string() }
         } else null
     }
 
@@ -23,11 +25,7 @@ class StringConverterFactory : Converter.Factory() {
         methodAnnotations: Array<Annotation>, retrofit: Retrofit
     ): Converter<*, RequestBody>? {
         return if (String::class.java == type) {
-            Converter<String?, RequestBody> { value -> RequestBody.create(MEDIA_TYPE, value) }
+            Converter<String?, RequestBody> { value -> RequestBody.create(MEDIA_TYPE, value.toString()) }
         } else null
-    }
-
-    companion object {
-        private val MEDIA_TYPE: MediaType? = MediaType.parse("text/plain")
     }
 }

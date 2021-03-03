@@ -6,14 +6,10 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class ScpApplication : Application() {
-
-    companion object {
-        var context: Context? = null
-    }
+    var context: Context? = null
 
     override fun onCreate() {
         super.onCreate()
         context = this
-
     }
 }

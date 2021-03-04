@@ -1,33 +1,43 @@
 package com.shiroumi.scp
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.shiroumi.scp.delegations.ViewModelStateDelegation
 import com.shiroumi.scp.network.Client
+import com.shiroumi.scp.network.PATH_INDEX
 import com.shiroumi.scp.network.doEnqueue
-import com.shiroumi.scp.network.doFailure
 import com.shiroumi.scp.network.doSuccess
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-
-const val SAVED_INDEX_PAGE = "saved_state:index_page"
+const val TAG_MAIN_VIEW_MODEL = "log:main_view_model"
+const val KEY_AUTO_INITIALIZED = "key:auto_initialized"
 
 class MainViewModel @ViewModelInject constructor(
-    @Assisted private val savedStateHandle: SavedStateHandle
-) : ViewModel() {
+    @Assisted savedStateHandle: SavedStateHandle
+) : BaseViewModel(savedStateHandle) {
+    val title: MutableLiveData<String> by viewModelStateDelegation.byLiveData("main_view_model_title") { "TITLE" }
 
-    val indexPage: MutableLiveData<String> by Live(savedStateHandle)
-
-    fun getHTML() {
-
-        Client.service.getHtml().doEnqueue { response, throwable ->
-            response?.apply {
-                doSuccess { indexPage.value = response.body().toString() }
-                doFailure { Log.e("getHTML", throwable?.message.toString()) }
+    fun getDocument() {
+        Client.service.getDocument(PATH_INDEX).doEnqueue { res, t ->
+            res?.doSuccess {
+                title.value = it.apply {
+                    Jsoup.parse(this)
+                        .getElementById("header")
+                        .getElementsByTag("span")[0]
+                        .text()
+                }
             }
-            Log.e("getHTML", throwable?.message.toString())
+            t?.let { Log.e(TAG_MAIN_VIEW_MODEL, t.message.toString()) }
         }
     }
 }

@@ -1,27 +1,26 @@
 package com.shiroumi.scp
 
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 
-object HTMLConverter {
-    fun byAttr(html: String, attribute: String, name: String): Elements {
-        val document = Jsoup.parse(html)
-        return document.html(html).getElementsByAttributeValue(attribute, name)
-    }
+fun String.elementById(id: String): Element {
+    return Jsoup.parse(this).getElementById(id)
+}
 
-    fun byClass(html: String, className: String, name: String): Elements {
-        val document = Jsoup.parse(html)
-        return document.html(html).getElementsByClass(className)
-    }
+fun String.elementByAttr(attribute: String, name: String): Elements {
+    return Jsoup.parse(this).getElementsByAttributeValue(attribute, name)
+}
 
-    fun byTag(html: String, tagName: String): Elements {
-        val document = Jsoup.parse(html)
-        return document.html(html).getElementsByTag(tagName)
-    }
+fun String.elementByClass(clazz: String): Elements {
+    return Jsoup.parse(this).getElementsByClass(clazz)
+}
 
-    fun byId(html: String, id: String): Element {
-        val document = Jsoup.parse(html)
-        return document.html(html).getElementById(id)
-    }
+fun String.elementByTag(tag: String, name: String): Elements {
+    return Jsoup.parse(this).getElementsByTag(tag)
+}
+
+fun String.getBody(): Document {
+    return Jsoup.parse(this)
 }

@@ -17,10 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            MainPage()
-        }
-
+        setContent { MainPage() }
         Handler(mainLooper).postDelayed(
             { viewModel.apply { autoInitialize { getDocument() } } }, 2000L
         )
@@ -29,7 +26,7 @@ class MainActivity : AppCompatActivity() {
     @Preview
     @Composable
     fun MainPage() {
-        val title = viewModel.title.observeAsState()
-        title.value?.let { Text(it) }
+        val title = viewModel.title.observeAsState("default")
+        Text(title.value)
     }
 }

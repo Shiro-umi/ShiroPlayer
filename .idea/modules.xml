@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/scp.iml" filepath="$PROJECT_DIR$/.idea/scp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scp.iml" filepath="$PROJECT_DIR$/.idea/modules/scp.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/scp.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/scp.app.iml" />
     </modules>
   </component>

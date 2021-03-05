@@ -7,5 +7,5 @@ import retrofit2.http.Path
 
 interface Service {
     @GET("{path}")
-    fun getDocument(@Path("path") path: String): Call<String>
+    suspend fun getDocument(@Path("path") path: String): String
 }

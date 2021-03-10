@@ -35,4 +35,8 @@ class MainViewModel @ViewModelInject constructor(
             }
         }
     }
+
+    override fun initialize() {
+        getDocument()
+    }
 }

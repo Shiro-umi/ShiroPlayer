@@ -1,14 +1,12 @@
 package com.shiroumi.scp
 
 import android.os.Bundle
-import android.os.Handler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -17,16 +15,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MainPage() }
-        Handler(mainLooper).postDelayed(
-            { viewModel.apply { autoInitialize { getDocument() } } }, 2000L
-        )
-    }
-
-    @Preview
-    @Composable
-    fun MainPage() {
-        val title = viewModel.title.observeAsState("default")
-        Text(title.value)
+        setContent {
+            val navController = rememberNavController()
+            NavHost(navController = navController, startDestination = "home") {
+                composable("home") { MainPage(navController, viewModel) }
+                composable("second") { SecondPage(navController) }
+                composable("third") { ThirdPage() }
+            }
+        }
     }
 }
+
+
+
+
+//        Handler(mainLooper).postDelayed(
+//            { viewModel.apply { autoInitialize() } }, 2000L
+//        )

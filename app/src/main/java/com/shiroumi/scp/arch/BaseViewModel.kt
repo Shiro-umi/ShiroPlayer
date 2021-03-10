@@ -9,20 +9,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-open class BaseViewModel(
+abstract class BaseViewModel(
     private val savedStateHandle: SavedStateHandle
-): ViewModel() {
+) : ViewModel() {
 
     val viewModelStateDelegation = ViewModelStateDelegation(savedStateHandle)
 
     private var autoInitialized: Boolean? = savedStateHandle.get<Boolean>(KEY_AUTO_INITIALIZED)
 
-    fun autoInitialize(block: () -> Unit) {
+    fun autoInitialize() {
         if (autoInitialized == true) return
-        block.invoke()
+        initialize()
         savedStateHandle.set(KEY_AUTO_INITIALIZED, true)
         autoInitialized = true
     }
 
-
+    abstract fun initialize()
 }

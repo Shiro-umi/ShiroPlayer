@@ -1,11 +1,11 @@
-package com.shiroumi.scp
+package com.shiroumi.shiroplayer
 
 import android.app.Application
 import android.content.Context
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class ScpApplication : Application() {
+class ShiroApplication : Application() {
     var context: Context? = null
 
     override fun onCreate() {

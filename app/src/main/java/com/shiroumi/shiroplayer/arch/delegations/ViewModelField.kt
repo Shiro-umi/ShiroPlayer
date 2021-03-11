@@ -1,4 +1,4 @@
-package com.shiroumi.scp.arch.delegations
+package com.shiroumi.shiroplayer.arch.delegations
 
 import androidx.lifecycle.SavedStateHandle
 

@@ -1,13 +1,9 @@
-package com.shiroumi.scp.arch
+package com.shiroumi.shiroplayer.arch
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.shiroumi.scp.KEY_AUTO_INITIALIZED
-import com.shiroumi.scp.arch.delegations.ViewModelStateDelegation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.shiroumi.shiroplayer.KEY_AUTO_INITIALIZED
+import com.shiroumi.shiroplayer.arch.delegations.ViewModelStateDelegation
 
 abstract class BaseViewModel(
     private val savedStateHandle: SavedStateHandle

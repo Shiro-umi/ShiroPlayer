@@ -1,6 +1,5 @@
-package com.shiroumi.scp.network
+package com.shiroumi.shiroplayer.network
 
-import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
 

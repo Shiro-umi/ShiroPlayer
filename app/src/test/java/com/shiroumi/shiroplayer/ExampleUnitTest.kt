@@ -1,4 +1,4 @@
-package com.shiroumi.scp
+package com.shiroumi.shiroplayer
 
 import org.junit.Test
 

@@ -1,14 +1,14 @@
-package com.shiroumi.scp
+package com.shiroumi.shiroplayer
 
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.shiroumi.scp.arch.BaseViewModel
-import com.shiroumi.scp.arch.delegations.ViewModelField
-import com.shiroumi.scp.network.Client
-import com.shiroumi.scp.network.PATH_INDEX
+import com.shiroumi.shiroplayer.arch.BaseViewModel
+import com.shiroumi.shiroplayer.arch.delegations.ViewModelField
+import com.shiroumi.shiroplayer.network.Client
+import com.shiroumi.shiroplayer.network.PATH_INDEX
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

@@ -1,8 +1,7 @@
-package com.shiroumi.scp.arch.delegations
+package com.shiroumi.shiroplayer.arch.delegations
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import com.shiroumi.scp.arch.BaseViewModel
+import com.shiroumi.shiroplayer.arch.BaseViewModel
 import kotlin.reflect.KProperty
 
 class FieldDelegation<T> constructor(

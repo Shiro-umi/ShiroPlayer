@@ -1,9 +1,9 @@
-package com.shiroumi.scp.arch.delegations
+package com.shiroumi.shiroplayer.arch.delegations
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
-import com.shiroumi.scp.arch.BaseLiveData
-import com.shiroumi.scp.arch.BaseViewModel
+import com.shiroumi.shiroplayer.arch.BaseLiveData
+import com.shiroumi.shiroplayer.arch.BaseViewModel
 import kotlin.reflect.KProperty
 
 class LiveDataDelegation<T> constructor(

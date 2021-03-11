@@ -1,4 +1,4 @@
-package com.shiroumi.scp.arch
+package com.shiroumi.shiroplayer.arch
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle

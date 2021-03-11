@@ -1,4 +1,4 @@
-package com.shiroumi.scp.network
+package com.shiroumi.shiroplayer.network
 
 import okhttp3.OkHttpClient
 import okhttp3.Request

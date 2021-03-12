@@ -1,9 +1,12 @@
 package com.shiroumi.shiroplayer
 
 import android.graphics.Color
+import android.media.AudioManager
+import android.media.MediaController2
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.View
 import android.view.WindowInsetsController.*
 import androidx.activity.compose.setContent
@@ -37,6 +40,12 @@ class MainActivity : AppCompatActivity() {
         Handler(mainLooper).postDelayed(
             { viewModel.apply { autoInitialize() } }, 2000L
         )
+
+        Log.d("asdasdasd", Scanner.getMusicData(this).toString())
+
+
+
+
     }
 
     @Suppress("DEPRECATION")

@@ -19,7 +19,6 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintLayoutScope
 import com.shiroumi.shiroplayer.R
 
-@Preview("home")
 @ExperimentalComposeUiApi
 @Composable
 fun Home() {
@@ -35,17 +34,19 @@ fun Home() {
                 .constrainAs(titleBar) {
                     top.linkTo(parent.top)
                     start.linkTo(parent.start)
+                    end.linkTo(parent.end)
                 }
-                .padding(18.dp, 4.dp, 0.dp, 4.dp)
-                .height(48.dp)
         )
     }
 }
 
-@Preview("titleBar")
 @Composable
-fun TitleBar(modifier: Modifier = Modifier) {
-    ConstraintLayout(modifier = modifier) {
+fun TitleBar(modifier: Modifier) {
+    ConstraintLayout(
+        modifier = modifier
+            .padding(18.dp, 4.dp, 18.dp, 4.dp)
+            .height(48.dp)
+    ) {
         val title = createRef()
         Text(
             text = "Compose",

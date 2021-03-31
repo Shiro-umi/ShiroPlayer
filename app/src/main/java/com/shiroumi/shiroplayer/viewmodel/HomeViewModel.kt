@@ -9,14 +9,17 @@ class HomeViewModel : ViewModel() {
 
     private var musicService: IMusicService? = null
 
+    val indexContent: MutableLiveData<MutableList<Music>> = MutableLiveData()
     val music: MutableLiveData<Music> = MutableLiveData()
 
     fun setBinder(musicService: IMusicService?) {
         this.musicService = musicService
     }
 
-    fun getBinder(): IMusicService? {
-        return musicService
+    fun updateIndexContent() {
+        musicService?.indexContent?.apply {
+            indexContent.value = this
+        }
     }
 
     fun play() {

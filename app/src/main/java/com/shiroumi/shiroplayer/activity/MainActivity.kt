@@ -21,7 +21,10 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        observeBinderState { viewModel.setBinder(it) }
+        observeBinderState {
+            viewModel.setBinder(it)
+            viewModel.updateIndexContent()
+        }
 
         setContent {
             NavHost(

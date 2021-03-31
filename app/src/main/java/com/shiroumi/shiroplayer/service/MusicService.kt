@@ -1,5 +1,6 @@
 package com.shiroumi.shiroplayer.service
 
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -11,9 +12,13 @@ import com.shiroumi.shiroplayer.components.Remoter
 class MusicService : BaseService() {
     lateinit var remoter: Remoter
 
+    override fun attachBaseContext(newBase: Context?) {
+        super.attachBaseContext(newBase)
+        remoter = Remoter(this, contentResolver)
+    }
+
     @ExperimentalComposeUiApi
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        remoter = Remoter(this, contentResolver)
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -28,16 +33,20 @@ class MusicService : BaseService() {
     private val token = object : IMusicService.Stub() {
         override fun play(): Music? {
             remoter.play()
-            return remoter.current()
+            return remoter.currentMusic
         }
 
         override fun playNext(): Music? {
             remoter.playNext()
-            return remoter.current()
+            return remoter.currentMusic
         }
 
         override fun getCurrentMusic(): Music? {
-            return remoter.current()
+            return remoter.currentMusic
+        }
+
+        override fun getIndexContent(): MutableList<Music> {
+            return remoter.indexContent
         }
     }
 }

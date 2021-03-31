@@ -9,4 +9,5 @@ interface IMusicService {
     Music play();
     Music playNext();
     Music getCurrentMusic();
+    List<Music> getIndexContent();
 }

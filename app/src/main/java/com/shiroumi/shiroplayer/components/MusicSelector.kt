@@ -1,61 +1,89 @@
 package com.shiroumi.shiroplayer.components
 
+import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.database.Cursor
 import android.provider.MediaStore
 import com.shiroumi.shiroplayer.Music
 
+
 class MusicSelector(private val contentResolver: ContentResolver) {
+    @SuppressLint("InlinedApi")
+    private val normalProjection = arrayOf(
+        MediaStore.Audio.AudioColumns._ID,
+        MediaStore.Audio.Media.TITLE,
+        MediaStore.Audio.Media.ARTIST,
+        MediaStore.Audio.Media.ALBUM,
+        MediaStore.Audio.Media.DURATION
+    )
 
-    fun updatePlayList(): PlayListNode? {
-        val cursor = contentResolver.query(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            arrayOf(
-                MediaStore.Audio.AudioColumns._ID,
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.ALBUM,
-                MediaStore.Audio.Media.DURATION
-            ),
-            null,
-            null,
-            MediaStore.Audio.Media.DEFAULT_SORT_ORDER
-        )
-        cursor ?: return null
+    fun updatePlayList(@PlayMode playMode: String): PlayListNode? {
         var head: PlayListNode? = null
-        var pointer = head
+        // todo 后续增加按不同条件查询不同projection
+        val projection = normalProjection
 
-        cursor.apply {
-            moveToFirst()
-            while (position < count) {
-                val music = getMusic(this)
-                val nextNode = PlayListNode(music)
-                if (head == null) {
-                    head = nextNode
-                    pointer = head
-                    moveToNext()
-                    continue
-                }
-                pointer?.next(nextNode)
-                nextNode.prev(pointer)
-                pointer = nextNode
-                moveToNext()
+        when (playMode) {
+            PLAY_MODE_NORMAL -> select(projection) { cursor ->
+                head = buildNormalList(cursor)
             }
-            close()
-        }
-        pointer?.next(head)
-        head?.prev(pointer)
 
+            PLAY_MODE_RANDOM -> select(projection) { cursor ->
+                head = buildNormalList(cursor)
+            }
+
+            PLAY_MODE_SINGLE -> select(projection) { cursor ->
+                head = buildNormalList(cursor)
+            }
+        }
         return head
     }
 
-    private fun getMusic(cursor: Cursor): Music {
+    private fun select(
+        projection: Array<String>,
+        block: (Cursor) -> Unit
+    ) {
+        contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            projection,
+            null,
+            null,
+            MediaStore.Audio.Media.DEFAULT_SORT_ORDER
+        )?.apply {
+            block(this)
+            close()
+        }
+    }
+
+    private fun buildNormalList(c: Cursor): PlayListNode? {
+        var head: PlayListNode? = null
+        var pointer = head
+        c.moveToFirst()
+        while (c.position < c.count) {
+            val music = getMusic(c)
+            val nextNode = PlayListNode(music)
+            if (head == null) {
+                head = nextNode
+                pointer = head
+                c.moveToNext()
+                continue
+            }
+            pointer?.next = nextNode
+            nextNode.prev = pointer
+            pointer = nextNode
+            c.moveToNext()
+        }
+        pointer?.next = head
+        head?.prev = pointer
+        return head
+    }
+
+    private fun getMusic(c: Cursor): Music {
         val music = Music()
-        music._id = cursor.getLong(0)
-        music.title = cursor.getString(1)
-        music.artist = cursor.getString(2)
-        music.album = cursor.getString(3)
-        music.duration = cursor.getLong(4)
+        music._id = c.getLong(0)
+        music.title = c.getString(1)
+        music.artist = c.getString(2)
+        music.album = c.getString(3)
+        music.duration = c.getLong(4)
         return music
     }
 }

@@ -1,7 +1,7 @@
 package com.shiroumi.shiroplayer.arch.delegations
 
 import androidx.lifecycle.SavedStateHandle
-import com.shiroumi.shiroplayer.arch.BaseViewModel
+import com.shiroumi.shiroplayer.arch.viewmodel.BaseStatefulViewModel
 import kotlin.reflect.KProperty
 
 class FieldDelegation<T> constructor(
@@ -22,7 +22,7 @@ class FieldDelegation<T> constructor(
         }
 
     override operator fun getValue(
-        thisRef: BaseViewModel,
+        thisRef: BaseStatefulViewModel,
         property: KProperty<*>
     ): ViewModelField<T?> {
         return value

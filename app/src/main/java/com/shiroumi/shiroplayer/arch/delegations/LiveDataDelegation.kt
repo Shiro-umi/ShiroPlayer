@@ -2,8 +2,8 @@ package com.shiroumi.shiroplayer.arch.delegations
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
-import com.shiroumi.shiroplayer.arch.BaseLiveData
-import com.shiroumi.shiroplayer.arch.BaseViewModel
+import com.shiroumi.shiroplayer.arch.livedata.BaseLiveData
+import com.shiroumi.shiroplayer.arch.viewmodel.BaseStatefulViewModel
 import kotlin.reflect.KProperty
 
 class LiveDataDelegation<T> constructor(
@@ -17,7 +17,7 @@ class LiveDataDelegation<T> constructor(
         }
 
     override operator fun getValue(
-        thisRef: BaseViewModel,
+        thisRef: BaseStatefulViewModel,
         property: KProperty<*>
     ): MutableLiveData<T> {
         return value

@@ -46,6 +46,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.3.2'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.media2:media2:1.0.0-alpha04'
     apply plugin: "androidx.navigation.safeargs.kotlin"
     implementation 'androidx.ui:ui-layout:0.1.0-dev08'
 
@@ -70,22 +71,25 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.11.1'
 
     // compose
-    implementation 'androidx.compose.ui:ui:1.0.0-beta01'
-    implementation 'androidx.compose.ui:ui-tooling:1.0.0-beta01'
-    implementation 'androidx.compose.foundation:foundation:1.0.0-beta01'
-    implementation 'androidx.compose.material:material:1.0.0-beta01'
-    implementation 'androidx.compose.material:material-icons-core:1.0.0-beta01'
-    implementation 'androidx.compose.material:material-icons-extended:1.0.0-beta01'
-    implementation 'androidx.compose.runtime:runtime-livedata:1.0.0-beta01'
-    implementation "androidx.compose.runtime:runtime:1.0.0-beta01"
-    androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.0.0-beta01'
-    implementation 'androidx.activity:activity-compose:1.3.0-alpha03'
-    implementation 'androidx.navigation:navigation-compose:1.0.0-alpha08'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha02'
+    implementation 'androidx.compose.ui:ui:1.0.0-beta03'
+    implementation 'androidx.compose.ui:ui-tooling:1.0.0-beta03'
+    implementation 'androidx.compose.foundation:foundation:1.0.0-beta03'
+    implementation 'androidx.compose.material:material:1.0.0-beta03'
+    implementation 'androidx.compose.material:material-icons-core:1.0.0-beta03'
+    implementation 'androidx.compose.material:material-icons-extended:1.0.0-beta03'
+    implementation 'androidx.compose.runtime:runtime-livedata:1.0.0-beta03'
+    implementation "androidx.compose.runtime:runtime:1.0.0-beta03"
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.0.0-beta03'
+    implementation 'androidx.activity:activity-compose:1.3.0-alpha04'
+    implementation 'androidx.navigation:navigation-compose:1.0.0-alpha09'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha03'
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha03"
 
     // media2
     implementation "androidx.media2:media2-session:$media2_version"
     implementation "androidx.media2:media2-widget:$media2_version"
     implementation "androidx.media2:media2-player:$media2_version"
+
+    implementation "com.github.permissions-dispatcher:permissionsdispatcher:4.8.0"
+    kapt "com.github.permissions-dispatcher:permissionsdispatcher-processor:4.8.0"
 }

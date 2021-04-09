@@ -12,3 +12,4 @@
 /captures
 .externalNativeBuild
 .cgit rm -r --cached .xx
+.idea/

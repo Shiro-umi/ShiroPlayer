@@ -6,6 +6,7 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.database.Cursor
 import android.provider.MediaStore
+import android.util.Log
 import com.shiroumi.shiroplayer.Music
 
 
@@ -21,31 +22,31 @@ class MusicSelector(
         MediaStore.Audio.Media.DURATION
     )
 
-    fun updatePlayList(@PlayMode playMode: String): PlayListNode? {
-        var head: PlayListNode? = null
+    fun updatePlayList(@PlayMode playMode: String): Pair<List<PlayListNode?>, List<Music>>? {
         // todo 后续增加按不同条件查询不同projection
         val projection = normalProjection
 
-        when (playMode) {
+        return when (playMode) {
             PLAY_MODE_NORMAL -> select(projection) { cursor ->
-                head = buildNormalList(cursor)
+                buildNormalList(cursor)
             }
 
             PLAY_MODE_RANDOM -> select(projection) { cursor ->
-                head = buildNormalList(cursor)
+                buildNormalList(cursor)
             }
 
             PLAY_MODE_SINGLE -> select(projection) { cursor ->
-                head = buildNormalList(cursor)
+                buildNormalList(cursor)
             }
+            else -> null
         }
-        return head
     }
 
     private fun select(
         projection: Array<String>,
-        block: (Cursor) -> Unit
-    ) {
+        block: (Cursor) -> Pair<List<PlayListNode?>, List<Music>>
+    ): Pair<List<PlayListNode?>, List<Music>>? {
+        var result: Pair<List<PlayListNode?>, List<Music>>? = null
         contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection,
@@ -53,32 +54,23 @@ class MusicSelector(
             null,
             MediaStore.Audio.Media.DEFAULT_SORT_ORDER
         )?.apply {
-            block(this)
+            result = block(this)
             close()
         }
+        return result
     }
 
-    private fun buildNormalList(c: Cursor): PlayListNode? {
-        var head: PlayListNode? = null
-        var pointer = head
+    private fun buildNormalList(c: Cursor): Pair<List<PlayListNode?>, List<Music>> {
+        val realPlayList = mutableListOf<PlayListNode?>()
+        val playList = mutableListOf<Music>()
         c.moveToFirst()
         while (c.position < c.count) {
             val music = getMusic(c)
-            val nextNode = PlayListNode(music)
-            if (head == null) {
-                head = nextNode
-                pointer = head
-                c.moveToNext()
-                continue
-            }
-            pointer?.next = nextNode
-            nextNode.prev = pointer
-            pointer = nextNode
+            realPlayList.add(PlayListNode(music))
+            playList.add(music)
             c.moveToNext()
         }
-        pointer?.next = head
-        head?.prev = pointer
-        return head
+        return realPlayList to playList
     }
 
     private fun getMusic(c: Cursor): Music {
@@ -92,10 +84,6 @@ class MusicSelector(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             c.getLong(0)
         )
-//        val retriever = MediaMetadataRetriever()
-//        retriever.setDataSource(context, music.uri)
-//        val pic = retriever.embeddedPicture
-//        retriever.release()
         return music
     }
 }

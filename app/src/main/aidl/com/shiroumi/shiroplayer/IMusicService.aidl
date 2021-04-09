@@ -6,8 +6,9 @@ parcelable Music;
 // Declare any non-default types here with import statements
 
 interface IMusicService {
-    Music play();
+    Music play(int index);
     Music playNext();
     Music getCurrentMusic();
-    List<Music> getIndexContent();
+    List<Music> getPlayList();
+    Bitmap getMusicCover();
 }

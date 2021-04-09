@@ -2,6 +2,7 @@ package com.shiroumi.shiroplayer.service
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.IBinder
 import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.Music
@@ -25,8 +26,8 @@ class MusicService : BaseService() {
     }
 
     private val token = object : IMusicService.Stub() {
-        override fun play(): Music? {
-            remoter.play()
+        override fun play(int: Int): Music? {
+            remoter.play(int)
             return remoter.currentMusic
         }
 
@@ -39,8 +40,12 @@ class MusicService : BaseService() {
             return remoter.currentMusic
         }
 
-        override fun getIndexContent(): MutableList<Music> {
-            return remoter.indexContent
+        override fun getPlayList(): List<Music>? {
+            return remoter.playList
+        }
+
+        override fun getMusicCover(): Bitmap? {
+            return remoter.currentMusicCover
         }
     }
 }

@@ -2,6 +2,9 @@ package com.shiroumi.shiroplayer.components
 
 import android.content.ContentResolver
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import androidx.annotation.StringDef
 import com.shiroumi.shiroplayer.Music
 
@@ -22,44 +25,63 @@ class Remoter(
     contentResolver: ContentResolver
 ) {
     private val selector = MusicSelector(contentResolver)
-    private var currentNode: PlayListNode? = null
+    private var currentIndex = -1
+    private var realPlayList: List<PlayListNode?>? = null
+    private var retriever: MediaMetadataRetriever? = null
+    var playList: List<Music>? = null
+        private set
+
+    private val currentNode: PlayListNode?
+        get() = realPlayList?.get(currentIndex)
+
     var currentMusic: Music? = null
         get() = currentNode?.music
         private set
-    var indexContent = arrayListOf<Music>()
+
+    var currentMusicCover: Bitmap? = null
+        get() {
+            retriever?.release()
+            var cover: Bitmap? = null
+            currentMusic?.uri?.let {
+                retriever = MediaMetadataRetriever()
+                retriever?.setDataSource(context, it)
+                val bitmapData = retriever?.embeddedPicture
+                cover = BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData?.size ?: 0)
+                retriever?.release()
+            }
+            return cover
+        }
         private set
 
     init {
-        currentNode = selector.updatePlayList(PLAY_MODE_NORMAL)
-        buildIndexPlayList()
+        selector.updatePlayList(PLAY_MODE_NORMAL)?.apply {
+            realPlayList = first
+            playList = second
+            if (realPlayList?.size ?: 0 > 0) {
+                currentIndex = 0
+            }
+        }
     }
 
-    fun play() {
-        stopFirst { currentNode?.play(context) }
+    fun play(index: Int = -1) {
+        if (index == -1) {
+            doWithNewIndexAfterStop(index) { currentNode?.play(context) }
+            return
+        }
+        doWithNewIndexAfterStop(index) { currentNode?.play(context) }
     }
 
     fun playNext() {
-        stopFirst { currentNode = currentNode?.next?.play(context) }
+        play(++currentIndex)
     }
 
     fun playPrev() {
-        stopFirst { currentNode = currentNode?.prev?.play(context) }
+        play(--currentIndex)
     }
 
-    private fun stopFirst(block: () -> Unit) {
+    private fun doWithNewIndexAfterStop(newIndex: Int, block: () -> Unit) {
         currentNode?.stop()
+        currentIndex = newIndex
         block.invoke()
-    }
-
-    private fun buildIndexPlayList() {
-        indexContent.clear()
-        val head = currentNode
-        var pointer = head
-        while (pointer?.next != head) {
-            pointer?.music?.let {
-                indexContent.add(it)
-            }
-            pointer = pointer?.next
-        }
     }
 }

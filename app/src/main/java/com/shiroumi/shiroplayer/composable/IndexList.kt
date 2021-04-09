@@ -1,8 +1,10 @@
 package com.shiroumi.shiroplayer.composable
 
+import android.graphics.Bitmap
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -14,7 +16,9 @@ import androidx.compose.material.Text
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.semantics.Role
@@ -30,7 +34,7 @@ fun IndexList(
     viewModel: HomeViewModel
 ) {
     val indexContent: MutableList<Music>
-            by viewModel.indexContent.observeAsState(mutableListOf())
+            by viewModel.playList.observeAsState(mutableListOf())
 
     var selected by rememberSimpleSavable(value = -1)
     var reSelected by rememberSimpleSavable(value = false)
@@ -48,6 +52,7 @@ fun IndexList(
                 ListItem(
                     music = item,
                     index = index,
+                    viewModel = viewModel,
                     state = if (index == selected) CardState.Selected else CardState.UnSelected
                 ) { i, positionInBox ->
                     if (i == selected) {
@@ -69,6 +74,7 @@ fun ListItem(
     music: Music,
     index: Int,
     state: CardState,
+    viewModel: HomeViewModel,
     selectListener: (Int, IntOffset) -> Unit
 ) {
     val elevation by animateFloatAsState(
@@ -79,6 +85,7 @@ fun ListItem(
     SelectableItem(
         selectListener = { thisPosition ->
             selectListener.invoke(index, thisPosition)
+            viewModel.play(index)
         }
     ) { modifier ->
         Card(
@@ -87,10 +94,20 @@ fun ListItem(
             shape = RoundedCornerShape(0.dp),
             elevation = elevation.dp
         ) {
-            Text(
-                modifier = Modifier,
-                text = music.title,
-            )
+            Box {
+                val cover: Bitmap? by viewModel.musicCover.observeAsState()
+                cover?.apply {
+                    if (state == CardState.Selected) {
+                        Image(bitmap = this.asImageBitmap(), contentDescription = "cover")
+                    }
+                }
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(0.dp, 0.dp, 8.dp, 0.dp),
+                    text = music.title
+                )
+            }
         }
     }
 }

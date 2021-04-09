@@ -8,8 +8,6 @@ import com.shiroumi.shiroplayer.Music
 
 class PlayListNode(music: Music) {
     var mediaPlayer: MediaPlayer? = null
-    var next: PlayListNode? = null
-    var prev: PlayListNode? = null
     var music: Music? = null
         private set
 
@@ -17,11 +15,11 @@ class PlayListNode(music: Music) {
         this.music = music
     }
 
-    fun play(context: Context): PlayListNode? {
+    fun play(context: Context){
         val music = this.music
         val uri = music?.uri
-        music ?: return null
-        uri ?: return null
+        music ?: return
+        uri ?: return
         mediaPlayer = MediaPlayer().apply {
             setAudioAttributes(
                 AudioAttributes.Builder().setLegacyStreamType(AudioManager.STREAM_MUSIC).build()
@@ -30,7 +28,6 @@ class PlayListNode(music: Music) {
             prepare()
             start()
         }
-        return this
     }
 
     fun stop() {

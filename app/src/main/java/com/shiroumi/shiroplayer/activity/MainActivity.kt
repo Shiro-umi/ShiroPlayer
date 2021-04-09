@@ -25,13 +25,18 @@ class MainActivity : BaseActivity() {
             viewModel.setBinder(it)
             viewModel.updateIndexContent()
         }
-
         setContent {
+            val navCtrl = rememberNavController()
             NavHost(
-                navController = rememberNavController(),
+                navController = navCtrl,
                 startDestination = HOME
             ) {
-                composable(HOME) { Home(viewModel = viewModel) }
+                composable(HOME) {
+                    Home(
+                        navCtrl = navCtrl,
+                        viewModel = viewModel
+                    )
+                }
             }
         }
     }

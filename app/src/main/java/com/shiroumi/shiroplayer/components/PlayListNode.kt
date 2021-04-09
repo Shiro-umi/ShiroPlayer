@@ -1,11 +1,9 @@
 package com.shiroumi.shiroplayer.components
 
-import android.content.ContentUris
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.provider.MediaStore
 import com.shiroumi.shiroplayer.Music
 
 class PlayListNode(music: Music) {
@@ -21,18 +19,14 @@ class PlayListNode(music: Music) {
 
     fun play(context: Context): PlayListNode? {
         val music = this.music
+        val uri = music?.uri
         music ?: return null
+        uri ?: return null
         mediaPlayer = MediaPlayer().apply {
             setAudioAttributes(
                 AudioAttributes.Builder().setLegacyStreamType(AudioManager.STREAM_MUSIC).build()
             )
-            setDataSource(
-                context,
-                ContentUris.withAppendedId(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    music._id
-                )
-            )
+            setDataSource(context, uri)
             prepare()
             start()
         }

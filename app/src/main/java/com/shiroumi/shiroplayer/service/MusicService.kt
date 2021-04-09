@@ -3,7 +3,6 @@ package com.shiroumi.shiroplayer.service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import androidx.compose.ui.ExperimentalComposeUiApi
 import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.Music
 import com.shiroumi.shiroplayer.arch.service.BaseService
@@ -15,11 +14,6 @@ class MusicService : BaseService() {
     override fun attachBaseContext(newBase: Context?) {
         super.attachBaseContext(newBase)
         remoter = Remoter(this, contentResolver)
-    }
-
-    @ExperimentalComposeUiApi
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onBind(intent: Intent?): IBinder {

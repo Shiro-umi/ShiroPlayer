@@ -1,5 +1,6 @@
 package com.shiroumi.shiroplayer
 
+import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 
@@ -8,7 +9,8 @@ class Music(
     var title: String = "",
     var artist: String = "",
     var album: String = "",
-    var duration: Long = 0L
+    var duration: Long = 0L,
+    var uri: Uri? = null
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(

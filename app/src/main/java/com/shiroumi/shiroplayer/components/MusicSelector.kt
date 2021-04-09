@@ -1,13 +1,17 @@
 package com.shiroumi.shiroplayer.components
 
+
 import android.annotation.SuppressLint
 import android.content.ContentResolver
+import android.content.ContentUris
 import android.database.Cursor
 import android.provider.MediaStore
 import com.shiroumi.shiroplayer.Music
 
 
-class MusicSelector(private val contentResolver: ContentResolver) {
+class MusicSelector(
+    private val contentResolver: ContentResolver
+) {
     @SuppressLint("InlinedApi")
     private val normalProjection = arrayOf(
         MediaStore.Audio.AudioColumns._ID,
@@ -84,6 +88,14 @@ class MusicSelector(private val contentResolver: ContentResolver) {
         music.artist = c.getString(2)
         music.album = c.getString(3)
         music.duration = c.getLong(4)
+        music.uri = ContentUris.withAppendedId(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            c.getLong(0)
+        )
+//        val retriever = MediaMetadataRetriever()
+//        retriever.setDataSource(context, music.uri)
+//        val pic = retriever.embeddedPicture
+//        retriever.release()
         return music
     }
 }

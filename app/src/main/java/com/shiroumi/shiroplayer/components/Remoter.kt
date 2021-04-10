@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import androidx.annotation.StringDef
+import com.shiroumi.shiroplayer.IMusicSercviceCommunication
 import com.shiroumi.shiroplayer.Music
 
 const val PLAY_MODE_NORMAL = "play_mode:normal"
@@ -41,17 +42,11 @@ class Remoter(
     var currentMusicCover: Bitmap? = null
         get() {
             retriever?.release()
-            var cover: Bitmap? = null
-            currentMusic?.uri?.let {
-                retriever = MediaMetadataRetriever()
-                retriever?.setDataSource(context, it)
-                val bitmapData = retriever?.embeddedPicture
-                cover = BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData?.size ?: 0)
-                retriever?.release()
-            }
-            return cover
+            return currentMusic?.getBlurryCover(context)
         }
         private set
+
+    var callback: IMusicSercviceCommunication? = null
 
     init {
         selector.updatePlayList(PLAY_MODE_NORMAL)?.apply {
@@ -64,11 +59,15 @@ class Remoter(
     }
 
     fun play(index: Int = -1) {
+        val doPlay: () -> Unit = {
+            currentNode?.processCallback = callback
+            currentNode?.play(context)
+        }
         if (index == -1) {
-            doWithNewIndexAfterStop(index) { currentNode?.play(context) }
+            doWithNewIndexAfterStop(0) { doPlay() }
             return
         }
-        doWithNewIndexAfterStop(index) { currentNode?.play(context) }
+        doWithNewIndexAfterStop(index) { doPlay() }
     }
 
     fun playNext() {

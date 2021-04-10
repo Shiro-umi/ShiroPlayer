@@ -79,7 +79,7 @@ class MusicSelector(
         music.title = c.getString(1)
         music.artist = c.getString(2)
         music.album = c.getString(3)
-        music.duration = c.getLong(4)
+        music.duration = c.getFloat(4)
         music.uri = ContentUris.withAppendedId(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             c.getLong(0)

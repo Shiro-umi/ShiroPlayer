@@ -9,7 +9,7 @@ class Music(
     var title: String = "",
     var artist: String = "",
     var album: String = "",
-    var duration: Long = 0L,
+    var duration: Float = 0f,
     var uri: Uri? = null
 ) : Parcelable {
 
@@ -18,7 +18,7 @@ class Music(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
-        parcel.readLong()
+        parcel.readFloat()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -26,7 +26,7 @@ class Music(
         parcel.writeString(title)
         parcel.writeString(artist)
         parcel.writeString(album)
-        parcel.writeLong(duration)
+        parcel.writeFloat(duration)
     }
 
     override fun describeContents(): Int {

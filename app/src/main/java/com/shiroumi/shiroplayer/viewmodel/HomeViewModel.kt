@@ -1,9 +1,12 @@
 package com.shiroumi.shiroplayer.viewmodel
 
 import android.graphics.Bitmap
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shiroumi.shiroplayer.IMusicSercviceCommunication
 import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.Music
 import kotlinx.coroutines.Dispatchers
@@ -14,11 +17,13 @@ class HomeViewModel : ViewModel() {
 
     private var musicService: IMusicService? = null
 
-    val playList: MutableLiveData<MutableList<Music>> = MutableLiveData()
-    val music: MutableLiveData<Music> = MutableLiveData()
-    val musicCover: MutableLiveData<Bitmap?> = MutableLiveData()
+    val playList = MutableLiveData<MutableList<Music>>()
+    val music = MutableLiveData<Music>()
+    val musicCover = MutableLiveData<Bitmap?>()
+    val playingProcess = MutableLiveData(0f)
 
-    fun setBinder(musicService: IMusicService?) {
+    fun setBinder(musicService: IMusicService) {
+        musicService.setCallback(callback)
         this.musicService = musicService
     }
 
@@ -60,6 +65,12 @@ class HomeViewModel : ViewModel() {
             musicService?.playNext()?.apply {
                 music.value = this
             }
+        }
+    }
+
+    private val callback = object : IMusicSercviceCommunication.Stub() {
+        override fun onMusicPlaying(process: Float) {
+            Handler(Looper.getMainLooper()).post { playingProcess.value = process }
         }
     }
 }

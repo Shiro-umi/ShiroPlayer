@@ -5,6 +5,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -18,17 +19,23 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.shiroumi.shiroplayer.Music
 import com.shiroumi.shiroplayer.viewmodel.HomeViewModel
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.math.roundToInt
 
+@ExperimentalContracts
 @Composable
 fun IndexList(
     viewModel: HomeViewModel
@@ -69,6 +76,7 @@ fun IndexList(
     }
 }
 
+@ExperimentalContracts
 @Composable
 fun ListItem(
     music: Music,
@@ -95,18 +103,67 @@ fun ListItem(
             elevation = elevation.dp
         ) {
             Box {
-                val cover: Bitmap? by viewModel.musicCover.observeAsState()
-                cover?.apply {
-                    if (state == CardState.Selected) {
-                        Image(bitmap = this.asImageBitmap(), contentDescription = "cover")
+                val cover = viewModel.musicCover.observeAsState().value
+                if (state == CardState.Selected && cover.exist()) {
+                    val process = viewModel.playingProcess.observeAsState(0f).value
+                    val backGroundModifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                    Image(
+                        modifier = backGroundModifier,
+                        bitmap = cover.asImageBitmap(),
+                        contentDescription = "cover",
+                        contentScale = ContentScale.FillWidth,
+                        alpha = 1f,
+                    )
+                    Box(
+                        modifier = backGroundModifier
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color.White, Color.Transparent)
+                                )
+                            )
+                    ) {
+                        Box(
+                            Modifier
+                                .background(Color.White)
+                                .fillMaxHeight()
+                                .fillMaxWidth(process)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .width(1.dp)
+                                    .background(Color(0xFFEEEEEE))
+                                    .align(Alignment.CenterEnd)
+                            ) {}
+                        }
                     }
                 }
-                Text(
+                Column(
                     modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(0.dp, 0.dp, 8.dp, 0.dp),
-                    text = music.title
-                )
+                        .wrapContentWidth()
+                        .fillMaxHeight()
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp, 8.dp, 8.dp, 0.dp)
+                            .wrapContentHeight(),
+                        text = music.title,
+                        fontSize = 16.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp, 8.dp, 8.dp, 0.dp),
+                        text = "${music.artist} - ${music.album}",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }
@@ -141,4 +198,12 @@ fun SelectableItem(
 enum class CardState {
     UnSelected,
     Selected
+}
+
+@ExperimentalContracts
+fun Bitmap?.exist(): Boolean {
+    contract {
+        returns(true) implies (this@exist != null)
+    }
+    return this != null
 }

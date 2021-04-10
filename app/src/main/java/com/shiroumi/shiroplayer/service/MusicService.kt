@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.IBinder
+import com.shiroumi.shiroplayer.IMusicSercviceCommunication
 import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.Music
 import com.shiroumi.shiroplayer.arch.service.BaseService
@@ -46,6 +47,10 @@ class MusicService : BaseService() {
 
         override fun getMusicCover(): Bitmap? {
             return remoter.currentMusicCover
+        }
+
+        override fun setCallback(callback: IMusicSercviceCommunication?) {
+            remoter.callback = callback
         }
     }
 }

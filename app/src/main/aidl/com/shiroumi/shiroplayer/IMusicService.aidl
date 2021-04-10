@@ -1,9 +1,8 @@
 // IMusicService.aidl
 package com.shiroumi.shiroplayer;
-
+import com.shiroumi.shiroplayer.IMusicSercviceCommunication;
 parcelable Music;
 
-// Declare any non-default types here with import statements
 
 interface IMusicService {
     Music play(int index);
@@ -11,4 +10,5 @@ interface IMusicService {
     Music getCurrentMusic();
     List<Music> getPlayList();
     Bitmap getMusicCover();
+    void setCallback(IMusicSercviceCommunication callback);
 }

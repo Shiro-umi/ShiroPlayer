@@ -15,6 +15,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 fun TitleBar(modifier: Modifier) {
     ConstraintLayout(
         modifier = modifier
+            .padding(0.dp, 0.dp, 0.dp, 8.dp)
     ) {
         val title = createRef()
         Text(

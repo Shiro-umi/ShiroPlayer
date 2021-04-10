@@ -11,10 +11,10 @@ import com.shiroumi.shiroplayer.HOME
 import com.shiroumi.shiroplayer.arch.activity.BaseActivity
 import com.shiroumi.shiroplayer.composable.Home
 import com.shiroumi.shiroplayer.viewmodel.HomeViewModel
-import dagger.hilt.android.AndroidEntryPoint
+import kotlin.contracts.ExperimentalContracts
 
+@ExperimentalContracts
 @ExperimentalComposeUiApi
-@AndroidEntryPoint
 class MainActivity : BaseActivity() {
 
     private val viewModel: HomeViewModel by viewModels()

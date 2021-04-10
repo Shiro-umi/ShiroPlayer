@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.compose.ui.ExperimentalComposeUiApi
 import com.shiroumi.shiroplayer.R
 import com.shiroumi.shiroplayer.activity.MainActivity
+import kotlin.contracts.ExperimentalContracts
 
 private const val CHANNEL_ID = "com.shiroumi.shiroplayer.notification"
 private const val CHANNEL_NAME = "shiro_player"
@@ -17,6 +18,7 @@ private const val FOREGROUND_ID = 999
 abstract class BaseService : Service() {
     lateinit var notification: Notification
 
+    @ExperimentalContracts
     @ExperimentalComposeUiApi
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("music", "onStartCommand")

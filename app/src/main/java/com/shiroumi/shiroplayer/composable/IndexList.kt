@@ -63,17 +63,22 @@ fun IndexList(
                     viewModel = viewModel,
                     state = if (index == selected) CardState.Selected else CardState.UnSelected
                 ) { i, positionInBox ->
-                    if (i == selected) {
-                        when (viewModel.musicState) {
-                            HomeViewModel.MusicState.PLAYING -> viewModel.pause()
-                            HomeViewModel.MusicState.PAUSE -> viewModel.resume()
-                            else -> viewModel.pause()
+                    viewModel.apply {
+                        if (i == selected) {
+                            when (viewModel.musicState) {
+                                HomeViewModel.MusicState.PLAYING -> pause.withClickFilter(100L)
+                                HomeViewModel.MusicState.PAUSE -> resume.withClickFilter(100L)
+                                else -> pause.withClickFilter(100L)
+                            }
+                            return@ListItem
                         }
-                        return@ListItem
+                        play.withClickFilter(index, 200L) {
+                            resetProcessNow()
+                            clearCoverNow()
+                        }
+                        viewModel.musicIndex.value = i
+                        offset = positionInBox
                     }
-                    viewModel.play(index)
-                    viewModel.musicIndex.value = i
-                    offset = positionInBox
                 }
             }
         }

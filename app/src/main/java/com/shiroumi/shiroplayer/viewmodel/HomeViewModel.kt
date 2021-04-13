@@ -4,19 +4,21 @@ import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.shiroumi.shiroplayer.IMusicServiceCommunication
 import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.Music
-import com.shiroumi.shiroplayer.components.player
-import com.shiroumi.shiroplayer.components.processCallback
+import com.shiroumi.shiroplayer.arch.viewmodel.BaseStatefulViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class HomeViewModel : ViewModel() {
-
+class HomeViewModel(
+    savedStateHandle: SavedStateHandle
+) : BaseStatefulViewModel(
+    savedStateHandle
+) {
     private var musicService: IMusicService? = null
     private var mainHandler = Handler(Looper.getMainLooper())
 
@@ -60,41 +62,38 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    fun play(index: Int = -1) {
+    val play: (Int) -> Unit = { index ->
         musicCover.value = null
-        mainHandler.removeCallbacksAndMessages(null)
-        mainHandler.postDelayed({
-            launchInIOThread { service ->
-                var currentMusic: Music?
-                var currentCover: Bitmap?
-                service.play(index).let { music ->
-                    currentMusic = music
-                }
-                service.musicCover.let { cover ->
-                    currentCover = cover
-                }
-                mainHandler.post {
-                    music.value = currentMusic
-                    musicCover.value = currentCover
-                    musicState = MusicState.PLAYING
-                }
-            }
-        }, 200L)
-    }
-
-    fun pause() {
-        if (musicState == MusicState.PAUSE) return
-        musicState = MusicState.PAUSE
         launchInIOThread { service ->
-            service.pause()
+            var currentMusic: Music?
+            var currentCover: Bitmap?
+            service.play(index).let { music ->
+                currentMusic = music
+            }
+            service.musicCover.let { cover ->
+                currentCover = cover
+            }
+            mainHandler.post {
+                music.value = currentMusic
+                musicCover.value = currentCover
+                musicState = MusicState.PLAYING
+            }
         }
     }
 
-    fun resume() {
-        if (musicState == MusicState.PLAYING) return
-        musicState = MusicState.PLAYING
+    val pause = {
+        launchInIOThread { service ->
+            service.pause()
+            if (musicState == MusicState.PAUSE) return@launchInIOThread
+            musicState = MusicState.PAUSE
+        }
+    }
+
+    val resume = {
         launchInIOThread { service ->
             service.resume()
+            if (musicState == MusicState.PLAYING) return@launchInIOThread
+            musicState = MusicState.PLAYING
         }
     }
 
@@ -106,6 +105,14 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    fun clearCoverNow() {
+        musicCover.value = null
+    }
+
+    fun resetProcessNow() {
+        playingProcess.value = 0f
+    }
+
     private fun launchInIOThread(block: (IMusicService) -> Unit) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
@@ -114,6 +121,19 @@ class HomeViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    fun (() -> Unit).withClickFilter(time: Long) {
+        mainHandler.removeCallbacksAndMessages(null)
+        mainHandler.postDelayed(this, time)
+    }
+
+    fun ((Int) -> Unit).withClickFilter(index: Int, time: Long, before: (() -> Unit)? = {}) {
+        before?.invoke()
+        mainHandler.removeCallbacksAndMessages(null)
+        mainHandler.postDelayed({
+            this(index)
+        }, time)
     }
 
     override fun onCleared() {

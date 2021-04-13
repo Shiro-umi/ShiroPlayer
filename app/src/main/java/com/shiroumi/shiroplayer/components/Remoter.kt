@@ -4,7 +4,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
-import com.shiroumi.shiroplayer.IMusicSercviceCommunication
+import com.shiroumi.shiroplayer.IMusicServiceCommunication
 import com.shiroumi.shiroplayer.Music
 
 
@@ -25,7 +25,7 @@ class Remoter(
         private set
 
     var currentMusic: Music? = null
-        get() = playList?.get(currentIndex)
+        get() = if (currentIndex == -1) null else playList?.get(currentIndex)
         private set
 
     var currentMusicCover: Bitmap? = null
@@ -35,23 +35,15 @@ class Remoter(
         }
         private set
 
-    var callback: IMusicSercviceCommunication? = null
-
     init {
         playList = selector.updatePlayList(PlayMode.NORMAL)
-        if (!playList.isNullOrEmpty()) {
-            currentIndex = 0
-        }
     }
 
     fun play(index: Int = -1) {
         val doPlay: () -> Unit = {
-            currentMusic?.play(
-                context = context,
-                processCallback = callback
-            )
+            currentMusic?.play(context = context)
         }
-        doWithNewIndexAfterStop(if(index == -1) 0 else index) { doPlay() }
+        doWithNewIndexAfterStop(if (index == -1) 0 else index) { doPlay() }
     }
 
     fun playNext() {
@@ -60,6 +52,14 @@ class Remoter(
 
     fun playPrev() {
         play(--currentIndex)
+    }
+
+    fun pause() {
+        currentMusic?.pause()
+    }
+
+    fun resume() {
+        currentMusic?.resume()
     }
 
     private fun doWithNewIndexAfterStop(newIndex: Int, block: () -> Unit) {

@@ -4,11 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.IBinder
-import com.shiroumi.shiroplayer.IMusicSercviceCommunication
+import com.shiroumi.shiroplayer.IMusicServiceCommunication
 import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.Music
 import com.shiroumi.shiroplayer.arch.service.BaseService
 import com.shiroumi.shiroplayer.components.Remoter
+import com.shiroumi.shiroplayer.components.processCallback
 
 class MusicService : BaseService() {
     lateinit var remoter: Remoter
@@ -37,6 +38,17 @@ class MusicService : BaseService() {
             return remoter.currentMusic
         }
 
+        override fun pause() {
+            remoter.pause()
+        }
+
+        override fun resume() {
+            remoter.resume()
+        }
+
+        override fun seekTo(position: Long) {
+        }
+
         override fun getCurrentMusic(): Music? {
             return remoter.currentMusic
         }
@@ -53,8 +65,8 @@ class MusicService : BaseService() {
             return remoter.currentMusicCover
         }
 
-        override fun setCallback(callback: IMusicSercviceCommunication?) {
-            remoter.callback = callback
+        override fun setCallback(callback: IMusicServiceCommunication?) {
+            processCallback = { process -> callback?.onMusicPlaying(process) }
         }
     }
 }

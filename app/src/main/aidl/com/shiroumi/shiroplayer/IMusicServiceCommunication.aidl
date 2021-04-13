@@ -1,6 +1,6 @@
-// IMusicSercviceCommunication.aidl
+// IMusicServiceCommunication.aidl
 package com.shiroumi.shiroplayer;
 
-interface IMusicSercviceCommunication {
+interface IMusicServiceCommunication {
     void onMusicPlaying(float process);
 }

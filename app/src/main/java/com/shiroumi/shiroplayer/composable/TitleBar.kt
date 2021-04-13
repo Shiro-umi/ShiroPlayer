@@ -6,10 +6,12 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.shiroumi.shiroplayer.R
 
 @Composable
 fun TitleBar(modifier: Modifier) {
@@ -19,7 +21,7 @@ fun TitleBar(modifier: Modifier) {
     ) {
         val title = createRef()
         Text(
-            text = "Compose",
+            text = stringResource(id = R.string.app_name),
             modifier = Modifier
                 .constrainAs(title) {
                     top.linkTo(parent.top)

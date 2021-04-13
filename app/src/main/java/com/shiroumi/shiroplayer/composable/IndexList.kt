@@ -1,6 +1,7 @@
 package com.shiroumi.shiroplayer.composable
 
 import android.graphics.Bitmap
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -43,7 +44,7 @@ fun IndexList(
     val indexContent: MutableList<Music>
             by viewModel.playList.observeAsState(mutableListOf())
 
-    var selected by rememberSimpleSavable(value = -1)
+    val selected by viewModel.musicIndex.observeAsState(-1)
     var reSelected by rememberSimpleSavable(value = false)
     var title by rememberSimpleSavable(value = "")
     var offset by remember { mutableStateOf(IntOffset(0, 0)) }
@@ -63,16 +64,19 @@ fun IndexList(
                     state = if (index == selected) CardState.Selected else CardState.UnSelected
                 ) { i, positionInBox ->
                     if (i == selected) {
-                        reSelected = true
+                        when (viewModel.musicState) {
+                            HomeViewModel.MusicState.PLAYING -> viewModel.pause()
+                            HomeViewModel.MusicState.PAUSE -> viewModel.resume()
+                            else -> viewModel.pause()
+                        }
                         return@ListItem
                     }
-                    reSelected = false
-                    selected = i
+                    viewModel.play(index)
+                    viewModel.musicIndex.value = i
                     offset = positionInBox
                 }
             }
         }
-
     }
 }
 
@@ -93,7 +97,6 @@ fun ListItem(
     SelectableItem(
         selectListener = { thisPosition ->
             selectListener.invoke(index, thisPosition)
-            viewModel.play(index)
         }
     ) { modifier ->
         Card(
@@ -104,42 +107,19 @@ fun ListItem(
         ) {
             Box {
                 val cover = viewModel.musicCover.observeAsState().value
+                val gradientEnd by animateColorAsState(
+                    targetValue = if (cover == null) Color.White else Color.Transparent,
+                    animationSpec = spring(Spring.DampingRatioNoBouncy, Spring.StiffnessVeryLow)
+                )
+
                 if (state == CardState.Selected && cover.exist()) {
-                    val backGroundModifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth()
-                    Image(
-                        modifier = backGroundModifier,
-                        bitmap = cover.asImageBitmap(),
-                        contentDescription = "cover",
-                        contentScale = ContentScale.FillWidth,
-                        alpha = 1f,
+                    ProcessBar(
+                        viewModel = viewModel,
+                        cover = cover,
+                        gradientEnd = gradientEnd
                     )
-                    Box(
-                        modifier = backGroundModifier
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(Color.White, Color.Transparent)
-                                )
-                            )
-                    ) {
-                        val process = viewModel.playingProcess.observeAsState(0f).value
-                        Box(
-                            Modifier
-                                .background(Color.White)
-                                .fillMaxHeight()
-                                .fillMaxWidth(process)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .width(1.dp)
-                                    .background(Color(0xFFEEEEEE))
-                                    .align(Alignment.CenterEnd)
-                            ) {}
-                        }
-                    }
                 }
+
                 Column(
                     modifier = Modifier
                         .wrapContentWidth()
@@ -165,6 +145,49 @@ fun ListItem(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ProcessBar(
+    viewModel: HomeViewModel,
+    cover: Bitmap,
+    gradientEnd: Color
+) {
+    val backGroundModifier = Modifier
+        .fillMaxHeight()
+        .fillMaxWidth()
+    Image(
+        modifier = backGroundModifier,
+        bitmap = cover.asImageBitmap(),
+        contentDescription = "cover",
+        contentScale = ContentScale.FillWidth,
+        alpha = 1f,
+    )
+
+    Box(
+        modifier = backGroundModifier
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color.White, gradientEnd)
+                )
+            )
+    ) {
+        val process = viewModel.playingProcess.observeAsState(0f).value
+        Box(
+            Modifier
+                .background(Color.White)
+                .fillMaxHeight()
+                .fillMaxWidth(process)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(1.dp)
+                    .background(Color(0xFFEEEEEE))
+                    .align(Alignment.CenterEnd)
+            ) {}
         }
     }
 }

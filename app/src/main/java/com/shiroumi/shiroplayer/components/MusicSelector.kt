@@ -22,31 +22,28 @@ class MusicSelector(
         MediaStore.Audio.Media.DURATION
     )
 
-    fun updatePlayList(@PlayMode playMode: String): Pair<List<PlayListNode?>, List<Music>>? {
+    fun updatePlayList(playMode: PlayMode): List<Music> {
         // todo 后续增加按不同条件查询不同projection
         val projection = normalProjection
 
         return when (playMode) {
-            PLAY_MODE_NORMAL -> select(projection) { cursor ->
+            PlayMode.NORMAL -> select(projection) { cursor ->
                 buildNormalList(cursor)
             }
-
-            PLAY_MODE_RANDOM -> select(projection) { cursor ->
+            PlayMode.SINGLE -> select(projection) { cursor ->
                 buildNormalList(cursor)
             }
-
-            PLAY_MODE_SINGLE -> select(projection) { cursor ->
+            PlayMode.RANDOM -> select(projection) { cursor ->
                 buildNormalList(cursor)
             }
-            else -> null
         }
     }
 
     private fun select(
         projection: Array<String>,
-        block: (Cursor) -> Pair<List<PlayListNode?>, List<Music>>
-    ): Pair<List<PlayListNode?>, List<Music>>? {
-        var result: Pair<List<PlayListNode?>, List<Music>>? = null
+        block: (Cursor) -> List<Music>
+    ): List<Music> {
+        val result = mutableListOf<Music>()
         contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection,
@@ -54,23 +51,21 @@ class MusicSelector(
             null,
             MediaStore.Audio.Media.DEFAULT_SORT_ORDER
         )?.apply {
-            result = block(this)
+            result.addAll(block(this))
             close()
         }
         return result
     }
 
-    private fun buildNormalList(c: Cursor): Pair<List<PlayListNode?>, List<Music>> {
-        val realPlayList = mutableListOf<PlayListNode?>()
+    private fun buildNormalList(c: Cursor): List<Music> {
         val playList = mutableListOf<Music>()
         c.moveToFirst()
         while (c.position < c.count) {
             val music = getMusic(c)
-            realPlayList.add(PlayListNode(music))
             playList.add(music)
             c.moveToNext()
         }
-        return realPlayList to playList
+        return playList
     }
 
     private fun getMusic(c: Cursor): Music {

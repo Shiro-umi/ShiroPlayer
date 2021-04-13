@@ -16,10 +16,12 @@ import kotlinx.coroutines.withContext
 class HomeViewModel : ViewModel() {
 
     private var musicService: IMusicService? = null
+    private var mainHandler = Handler(Looper.getMainLooper())
 
     val playList = MutableLiveData<MutableList<Music>>()
     val music = MutableLiveData<Music>()
     val musicCover = MutableLiveData<Bitmap?>()
+    val musicIndex = MutableLiveData(-1)
     val playingProcess = MutableLiveData(0f)
 
     fun setBinder(musicService: IMusicService) {
@@ -35,28 +37,34 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    fun play(index: Int = -1) {
-        viewModelScope.launch {
-            musicCover.value = null
-            val res = remotePlay(index)
-            music.value = res.first
-            musicCover.value = res.second
+    fun selectCurrentMusic() {
+        launchInIOThread { service ->
+            val currentMusic = service.currentMusic
+            val currentCover = service.musicCover
+            val currentIndex = service.currentIndex
+            mainHandler.post {
+                music.value = currentMusic
+                musicCover.value = currentCover
+                musicIndex.value = currentIndex
+            }
         }
     }
 
-    private suspend fun remotePlay(index: Int = -1): Pair<Music?, Bitmap?> {
-        return withContext(Dispatchers.IO) {
-            var currentMusic: Music? = null
-            var currentCover: Bitmap? = null
-            musicService?.apply {
-                play(index)?.let { music ->
-                    currentMusic = music
-                }
-                musicCover.let { cover ->
-                    currentCover = cover
-                }
+    fun play(index: Int = -1) {
+        musicCover.value = null
+        launchInIOThread { service ->
+            var currentMusic: Music?
+            var currentCover: Bitmap?
+            service.play(index).let { music ->
+                currentMusic = music
             }
-            currentMusic to currentCover
+            service.musicCover.let { cover ->
+                currentCover = cover
+            }
+            mainHandler.post {
+                music.value = currentMusic
+                musicCover.value = currentCover
+            }
         }
     }
 
@@ -68,9 +76,24 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    private fun launchInIOThread(block: (IMusicService) -> Unit) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                musicService?.apply {
+                    block(this)
+                }
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        mainHandler.removeCallbacksAndMessages(null)
+    }
+
     private val callback = object : IMusicSercviceCommunication.Stub() {
         override fun onMusicPlaying(process: Float) {
-            Handler(Looper.getMainLooper()).post { playingProcess.value = process }
+            mainHandler.post { playingProcess.value = process }
         }
     }
 }

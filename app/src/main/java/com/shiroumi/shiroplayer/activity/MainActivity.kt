@@ -12,6 +12,7 @@ import com.shiroumi.shiroplayer.arch.activity.BaseActivity
 import com.shiroumi.shiroplayer.composable.Home
 import com.shiroumi.shiroplayer.viewmodel.HomeViewModel
 import kotlin.contracts.ExperimentalContracts
+import kotlin.Pair
 
 @ExperimentalContracts
 @ExperimentalComposeUiApi
@@ -24,6 +25,7 @@ class MainActivity : BaseActivity() {
         observeBinderState {
             viewModel.setBinder(it)
             viewModel.updateIndexContent()
+            viewModel.selectCurrentMusic()
         }
         setContent {
             val navCtrl = rememberNavController()

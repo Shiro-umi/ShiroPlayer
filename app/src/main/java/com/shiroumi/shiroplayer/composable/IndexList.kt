@@ -105,7 +105,6 @@ fun ListItem(
             Box {
                 val cover = viewModel.musicCover.observeAsState().value
                 if (state == CardState.Selected && cover.exist()) {
-                    val process = viewModel.playingProcess.observeAsState(0f).value
                     val backGroundModifier = Modifier
                         .fillMaxHeight()
                         .fillMaxWidth()
@@ -124,6 +123,7 @@ fun ListItem(
                                 )
                             )
                     ) {
+                        val process = viewModel.playingProcess.observeAsState(0f).value
                         Box(
                             Modifier
                                 .background(Color.White)

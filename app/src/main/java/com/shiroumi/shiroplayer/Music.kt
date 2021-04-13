@@ -1,8 +1,11 @@
 package com.shiroumi.shiroplayer
 
+import android.content.Context
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
+import com.shiroumi.shiroplayer.components.player
+import com.shiroumi.shiroplayer.components.processPostHandler
 
 class Music(
     var _id: Long = 0,

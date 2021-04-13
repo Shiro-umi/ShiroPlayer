@@ -89,4 +89,8 @@ open class BaseActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(serviceConnection)
+    }
 }

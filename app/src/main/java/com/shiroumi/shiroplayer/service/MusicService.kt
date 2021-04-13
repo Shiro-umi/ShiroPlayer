@@ -41,6 +41,10 @@ class MusicService : BaseService() {
             return remoter.currentMusic
         }
 
+        override fun getCurrentIndex(): Int {
+            return remoter.currentIndex
+        }
+
         override fun getPlayList(): List<Music>? {
             return remoter.playList
         }

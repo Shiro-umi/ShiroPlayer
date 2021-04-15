@@ -8,6 +8,9 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +33,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.core.util.toRange
 import com.shiroumi.shiroplayer.Music
 import com.shiroumi.shiroplayer.viewmodel.HomeViewModel
 import kotlin.contracts.ExperimentalContracts
@@ -45,8 +49,8 @@ fun IndexList(
             by viewModel.playList.observeAsState(mutableListOf())
 
     val selected by viewModel.musicIndex.observeAsState(-1)
-    var reSelected by rememberSimpleSavable(value = false)
-    var title by rememberSimpleSavable(value = "")
+//    var reSelected by rememberSimpleSavable(value = false)
+//    var title by rememberSimpleSavable(value = "")
     var offset by remember { mutableStateOf(IntOffset(0, 0)) }
 
     Box {
@@ -82,6 +86,7 @@ fun IndexList(
                 }
             }
         }
+        // TODO expand item
     }
 }
 
@@ -171,6 +176,8 @@ fun ProcessBar(
         alpha = 1f,
     )
 
+    var progressWidth by remember { mutableStateOf(0f) }
+    val process = viewModel.playingProcess.observeAsState(0f).value
     Box(
         modifier = backGroundModifier
             .background(
@@ -178,8 +185,23 @@ fun ProcessBar(
                     listOf(Color.White, gradientEnd)
                 )
             )
+            .onGloballyPositioned {
+                progressWidth = it.size.width.toFloat()
+            }
+            .scrollable(
+                orientation = Orientation.Horizontal,
+                state = rememberScrollableState { delta ->
+                    val newProgress = process + delta / progressWidth / 2
+                    if ((0f..1f)
+                            .toRange()
+                            .contains(newProgress)
+                    ) {
+                        viewModel.localSeekTo(newProgress)
+                    }
+                    newProgress * progressWidth
+                }
+            )
     ) {
-        val process = viewModel.playingProcess.observeAsState(0f).value
         Box(
             Modifier
                 .background(Color.White)

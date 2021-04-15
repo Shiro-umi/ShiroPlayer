@@ -10,6 +10,7 @@ import com.shiroumi.shiroplayer.Music
 
 val processPostHandler = Handler(Looper.getMainLooper())
 var processCallback: ((Float) -> Unit)? = null
+var seekCallback: (() -> Unit)? = null
 
 val player: MediaPlayer by lazy {
     MediaPlayer().apply {
@@ -40,24 +41,29 @@ fun Music.play(
     }
 }
 
-fun Music.pause() {
-    if (!player.isPlaying) return
+fun MediaPlayer.doPause() {
+    if (!isPlaying) return
     processPostHandler.removeCallbacksAndMessages(null)
-    player.pause()
+    pause()
 }
 
-fun Music.resume() {
-    if (player.isPlaying) return
-    player.apply {
-        updateProcess(currentPosition.toFloat() / duration)
-        start()
-    }
+fun MediaPlayer.doResume() {
+    if (isPlaying) return
+    updateProcess(currentPosition.toFloat() / duration)
+    start()
 }
 
-fun Music.stop() {
-    if (!player.isPlaying) return
+fun MediaPlayer.doStop() {
+    if (!isPlaying) return
     processPostHandler.removeCallbacksAndMessages(null)
-    player.stop()
+    stop()
+}
+
+fun MediaPlayer.doSeekTo(target: Int) {
+    processPostHandler.removeCallbacksAndMessages(null)
+    seekTo(target)
+    start()
+    seekCallback?.invoke()
 }
 
 fun MediaPlayer.updateProcess(

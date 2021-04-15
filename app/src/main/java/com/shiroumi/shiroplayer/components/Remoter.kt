@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
-import com.shiroumi.shiroplayer.IMusicServiceCommunication
 import com.shiroumi.shiroplayer.Music
 
 
@@ -55,15 +54,19 @@ class Remoter(
     }
 
     fun pause() {
-        currentMusic?.pause()
+        player.doPause()
     }
 
     fun resume() {
-        currentMusic?.resume()
+        player.doResume()
+    }
+
+    fun seekTo(target: Long) {
+        player.doSeekTo(target.toInt())
     }
 
     private fun doWithNewIndexAfterStop(newIndex: Int, block: () -> Unit) {
-        currentMusic?.stop()
+        player.doStop()
         currentIndex = newIndex
         block.invoke()
     }

@@ -6,8 +6,8 @@ import android.os.Looper
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.shiroumi.shiroplayer.IMusicServiceCommunication
 import com.shiroumi.shiroplayer.IMusicService
+import com.shiroumi.shiroplayer.IMusicServiceCommunication
 import com.shiroumi.shiroplayer.Music
 import com.shiroumi.shiroplayer.arch.viewmodel.BaseStatefulViewModel
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +21,7 @@ class HomeViewModel(
 ) {
     private var musicService: IMusicService? = null
     private var mainHandler = Handler(Looper.getMainLooper())
+    private var seeking = false
 
     val playList = MutableLiveData<MutableList<Music>>()
     val music = MutableLiveData<Music>()
@@ -109,6 +110,25 @@ class HomeViewModel(
         musicCover.value = null
     }
 
+    fun localSeekTo(target: Float) {
+        if (!seeking) seeking = true
+        mainHandler.apply {
+            removeCallbacksAndMessages(null)
+            playingProcess.value = target
+            mainHandler.postDelayed({
+                remoteSeekTo(target)
+            }, 200L)
+        }
+    }
+
+    fun remoteSeekTo(target: Float) {
+        val duration = music.value?.duration
+        duration ?: return
+        launchInIOThread { service ->
+            service.seekTo((duration * target).toLong())
+        }
+    }
+
     fun resetProcessNow() {
         playingProcess.value = 0f
     }
@@ -143,7 +163,12 @@ class HomeViewModel(
 
     private val callback = object : IMusicServiceCommunication.Stub() {
         override fun onMusicPlaying(process: Float) {
+            if (seeking) return
             mainHandler.post { playingProcess.value = process }
+        }
+
+        override fun onSeekDone() {
+            seeking = false
         }
     }
 }

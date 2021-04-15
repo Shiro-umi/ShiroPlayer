@@ -23,7 +23,7 @@ val player: MediaPlayer by lazy {
         }
         setOnPreparedListener {
             start()
-            updateProcess(currentPosition.toFloat() / duration)
+            updateProcess()
         }
     }
 }
@@ -49,7 +49,7 @@ fun MediaPlayer.doPause() {
 
 fun MediaPlayer.doResume() {
     if (isPlaying) return
-    updateProcess(currentPosition.toFloat() / duration)
+    updateProcess()
     start()
 }
 
@@ -63,14 +63,17 @@ fun MediaPlayer.doSeekTo(target: Int) {
     processPostHandler.removeCallbacksAndMessages(null)
     seekTo(target)
     start()
+    updateProcess()
     seekCallback?.invoke()
 }
 
-fun MediaPlayer.updateProcess(
-    process: Float
-) {
+fun MediaPlayer.updateProcess() {
     processPostHandler.postDelayed({
-        processCallback?.invoke(process)
-        updateProcess(currentPosition.toFloat() / duration)
+        processCallback?.invoke(getProcess())
+        updateProcess()
     }, 100L)
+}
+
+fun MediaPlayer.getProcess(): Float {
+    return currentPosition.toFloat() / duration
 }

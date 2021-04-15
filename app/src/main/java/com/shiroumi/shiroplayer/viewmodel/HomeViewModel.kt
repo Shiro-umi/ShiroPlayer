@@ -121,7 +121,7 @@ class HomeViewModel(
         }
     }
 
-    fun remoteSeekTo(target: Float) {
+    private fun remoteSeekTo(target: Float) {
         val duration = music.value?.duration
         duration ?: return
         launchInIOThread { service ->

@@ -68,8 +68,10 @@ class MusicService : BaseService() {
         }
 
         override fun setCallback(callback: IMusicServiceCommunication?) {
-            processCallback = { process -> callback?.onMusicPlaying(process) }
-            seekCallback = { callback?.onSeekDone() }
+            callback?.apply {
+                processCallback = { process -> onMusicPlaying(process) }
+                seekCallback = { onSeekDone() }
+            }
         }
     }
 }

@@ -26,17 +26,21 @@ class MusicSelector(
         // todo 后续增加按不同条件查询不同projection
         val projection = normalProjection
 
-        return when (playMode) {
-            PlayMode.NORMAL -> select(projection) { cursor ->
-                buildNormalList(cursor)
-            }
-            PlayMode.SINGLE -> select(projection) { cursor ->
-                buildNormalList(cursor)
-            }
-            PlayMode.RANDOM -> select(projection) { cursor ->
-                buildNormalList(cursor)
-            }
+        return select(projection) { cursor ->
+            buildNormalList(cursor)
         }
+
+//        return when (playMode) {
+//            PlayMode.NORMAL -> select(projection) { cursor ->
+//                buildNormalList(cursor)
+//            }
+//            PlayMode.SINGLE -> select(projection) { cursor ->
+//                buildNormalList(cursor)
+//            }
+//            PlayMode.RANDOM -> select(projection) { cursor ->
+//                buildNormalList(cursor)
+//            }
+//        }
     }
 
     private fun select(

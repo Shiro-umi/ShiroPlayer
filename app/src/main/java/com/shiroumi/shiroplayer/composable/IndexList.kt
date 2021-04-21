@@ -2,9 +2,8 @@ package com.shiroumi.shiroplayer.composable
 
 import android.graphics.Bitmap
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,7 +22,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
@@ -49,11 +51,15 @@ fun IndexList(
             by viewModel.playList.observeAsState(mutableListOf())
 
     val selected by viewModel.musicIndex.observeAsState(-1)
-//    var reSelected by rememberSimpleSavable(value = false)
-//    var title by rememberSimpleSavable(value = "")
     var offset by remember { mutableStateOf(IntOffset(0, 0)) }
 
-    Box {
+    CustomBox(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(),
+        loadingAnimVerticalOffset = 42,
+        loadingCase = { indexContent.size == 0 }
+    ) {
         LazyColumn {
             itemsIndexed(
                 items = indexContent,

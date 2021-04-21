@@ -7,10 +7,10 @@ import android.media.MediaMetadataRetriever
 import com.shiroumi.shiroplayer.Music
 
 
-enum class PlayMode {
-    NORMAL,
-    SINGLE,
-    RANDOM
+enum class PlayMode(val value: Int) {
+    NORMAL(0),
+    SINGLE(1),
+    RANDOM(2)
 }
 
 class Remoter(
@@ -33,6 +33,22 @@ class Remoter(
             return currentMusic?.getBlurryCover(context)
         }
         private set
+
+    var playMode: Int = PlayMode.NORMAL.value
+        set(value) {
+            field = value
+            when (value) {
+                PlayMode.NORMAL.value -> completeCallback = {
+                    ++currentIndex
+                    currentMusic?.play(context)
+                    changeMusicCallback?.invoke()
+                }
+                PlayMode.SINGLE.value -> {
+                }
+                PlayMode.RANDOM.value -> {
+                }
+            }
+        }
 
     init {
         playList = selector.updatePlayList(PlayMode.NORMAL)

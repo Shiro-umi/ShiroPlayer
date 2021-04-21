@@ -14,4 +14,5 @@ interface IMusicService {
     List<Music> getPlayList();
     Bitmap getMusicCover();
     void setCallback(IMusicServiceCommunication callback);
+    void setPlayMode(int playMode);
 }

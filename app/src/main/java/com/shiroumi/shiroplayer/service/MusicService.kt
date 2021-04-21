@@ -8,9 +8,7 @@ import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.IMusicServiceCommunication
 import com.shiroumi.shiroplayer.Music
 import com.shiroumi.shiroplayer.arch.service.BaseService
-import com.shiroumi.shiroplayer.components.Remoter
-import com.shiroumi.shiroplayer.components.processCallback
-import com.shiroumi.shiroplayer.components.seekCallback
+import com.shiroumi.shiroplayer.components.*
 
 class MusicService : BaseService() {
     lateinit var remoter: Remoter
@@ -71,7 +69,12 @@ class MusicService : BaseService() {
             callback?.apply {
                 processCallback = { process -> onMusicPlaying(process) }
                 seekCallback = { onSeekDone() }
+                changeMusicCallback = { onMusicChanged() }
             }
+        }
+
+        override fun setPlayMode(playMode: Int) {
+            remoter.playMode = playMode
         }
     }
 }

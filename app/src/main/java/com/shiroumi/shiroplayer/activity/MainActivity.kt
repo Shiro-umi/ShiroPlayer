@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.shiroumi.shiroplayer.HOME
 import com.shiroumi.shiroplayer.arch.activity.BaseActivity
+import com.shiroumi.shiroplayer.components.PlayMode
 import com.shiroumi.shiroplayer.composable.Home
 import com.shiroumi.shiroplayer.viewmodel.HomeViewModel
 import kotlin.contracts.ExperimentalContracts
@@ -25,6 +26,8 @@ class MainActivity : BaseActivity() {
             viewModel.setBinder(it)
             viewModel.updateIndexContent()
             viewModel.selectCurrentMusic()
+            // todo 根据保存的设置选择PlayMode
+            viewModel.setPlayMode(PlayMode.NORMAL)
         }
         setContent {
             val navCtrl = rememberNavController()

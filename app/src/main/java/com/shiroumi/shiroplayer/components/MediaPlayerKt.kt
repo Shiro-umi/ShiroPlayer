@@ -11,6 +11,9 @@ import com.shiroumi.shiroplayer.Music
 val processPostHandler = Handler(Looper.getMainLooper())
 var processCallback: ((Float) -> Unit)? = null
 var seekCallback: (() -> Unit)? = null
+var changeMusicCallback: (() -> Unit)? = null
+
+var completeCallback: (() -> Unit)? = null
 
 val player: MediaPlayer by lazy {
     MediaPlayer().apply {
@@ -24,6 +27,9 @@ val player: MediaPlayer by lazy {
         setOnPreparedListener {
             start()
             updateProcess()
+        }
+        setOnCompletionListener {
+            completeCallback?.invoke()
         }
     }
 }

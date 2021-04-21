@@ -10,6 +10,7 @@ import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.IMusicServiceCommunication
 import com.shiroumi.shiroplayer.Music
 import com.shiroumi.shiroplayer.arch.viewmodel.BaseStatefulViewModel
+import com.shiroumi.shiroplayer.components.PlayMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -43,10 +44,8 @@ class HomeViewModel(
     }
 
     fun updateIndexContent() {
-        viewModelScope.launch {
-            musicService?.playList?.apply {
-                playList.value = this
-            }
+        launchInIOThread { service ->
+            mainHandler.post { playList.value = service.playList }
         }
     }
 
@@ -103,6 +102,12 @@ class HomeViewModel(
             musicService?.playNext()?.apply {
                 music.value = this
             }
+        }
+    }
+
+    fun setPlayMode(playMode: PlayMode) {
+        launchInIOThread { service ->
+            service.setPlayMode(playMode.value)
         }
     }
 
@@ -169,6 +174,10 @@ class HomeViewModel(
 
         override fun onSeekDone() {
             seeking = false
+        }
+
+        override fun onMusicChanged() {
+            selectCurrentMusic()
         }
     }
 }

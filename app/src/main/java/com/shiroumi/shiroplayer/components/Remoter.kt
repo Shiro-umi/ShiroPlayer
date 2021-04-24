@@ -51,7 +51,7 @@ class Remoter(
         }
 
     init {
-        playList = selector.updatePlayList(PlayMode.NORMAL)
+        playList = selector.updatePlayList()
     }
 
     fun play(index: Int = -1) {

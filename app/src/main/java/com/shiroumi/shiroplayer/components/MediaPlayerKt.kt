@@ -18,12 +18,10 @@ var completeCallback: (() -> Unit)? = null
 val player: MediaPlayer by lazy {
     MediaPlayer().apply {
         setAudioAttributes(
-            AudioAttributes.Builder().setLegacyStreamType(AudioManager.STREAM_MUSIC).build()
+            AudioAttributes.Builder()
+                .setLegacyStreamType(AudioManager.STREAM_MUSIC)
+                .build()
         )
-        setOnCompletionListener {
-            processPostHandler.removeCallbacksAndMessages(null)
-            stop()
-        }
         setOnPreparedListener {
             start()
             updateProcess()
@@ -68,8 +66,6 @@ fun MediaPlayer.doStop() {
 fun MediaPlayer.doSeekTo(target: Int) {
     processPostHandler.removeCallbacksAndMessages(null)
     seekTo(target)
-    start()
-    updateProcess()
     seekCallback?.invoke()
 }
 

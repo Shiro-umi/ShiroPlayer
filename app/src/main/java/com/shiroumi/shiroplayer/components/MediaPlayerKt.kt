@@ -38,8 +38,8 @@ fun Music.play(
     if (player.isPlaying) return
     val musicUri = uri
     musicUri ?: return
-    player.apply {
-        player.reset()
+    with(player) {
+        reset()
         setDataSource(context, musicUri)
         prepare()
     }
@@ -64,7 +64,6 @@ fun MediaPlayer.doStop() {
 }
 
 fun MediaPlayer.doSeekTo(target: Int) {
-    processPostHandler.removeCallbacksAndMessages(null)
     seekTo(target)
     seekCallback?.invoke()
 }

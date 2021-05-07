@@ -5,11 +5,9 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -17,7 +15,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -26,7 +23,6 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -35,9 +31,10 @@ import androidx.compose.ui.zIndex
 import androidx.core.util.toRange
 import com.shiroumi.shiroplayer.Music
 import com.shiroumi.shiroplayer.viewmodel.HomeViewModel
+import com.shiroumi.shiroplayer.viewmodel.PlayerState
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
-import kotlin.math.roundToInt
+import kotlin.math.*
 
 @ExperimentalContracts
 @Composable
@@ -73,11 +70,11 @@ fun IndexList(
                     viewModel = viewModel,
                     state = if (index == selected) CardState.Selected else CardState.UnSelected
                 ) { i, positionInBox ->
-                    viewModel.apply {
+                    with(viewModel) {
                         if (i == selected) {
-                            when (viewModel.musicState) {
-                                HomeViewModel.MusicState.PLAYING -> pause.withClickFilter(100L)
-                                HomeViewModel.MusicState.PAUSE -> resume.withClickFilter(100L)
+                            when (playerState.value) {
+                                PlayerState.PLAYING -> pause.withClickFilter(100L)
+                                PlayerState.PAUSE -> resume.withClickFilter(100L)
                                 else -> pause.withClickFilter(100L)
                             }
                             return@ListItem
@@ -86,7 +83,7 @@ fun IndexList(
                             clearCoverNow()
                             resetProcessNow()
                         }
-                        viewModel.musicIndex.value = i
+                        musicIndex.value = i
                         offset = positionInBox
                     }
                 }
@@ -231,18 +228,12 @@ fun SelectableItem(
     selectListener: (IntOffset) -> Unit,
     content: @Composable (Modifier) -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     var thisPosition by remember { mutableStateOf(IntOffset(0, 0)) }
     content(
         Modifier
             .fillMaxWidth()
             .height(64.dp)
-            .clickable(
-                enabled = true,
-                role = Role.Button,
-                interactionSource = interactionSource,
-                indication = rememberRipple()
-            ) {
+            .rippleClickable {
                 selectListener(thisPosition)
             }
             .onGloballyPositioned {

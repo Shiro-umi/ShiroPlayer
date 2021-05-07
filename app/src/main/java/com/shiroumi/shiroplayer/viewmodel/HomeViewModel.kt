@@ -1,5 +1,6 @@
 package com.shiroumi.shiroplayer.viewmodel
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
@@ -15,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@SuppressLint("NullSafeMutableLiveData")
 class HomeViewModel(
     savedStateHandle: SavedStateHandle
 ) : BaseStatefulViewModel(
@@ -26,17 +28,14 @@ class HomeViewModel(
 
     val playList = MutableLiveData<MutableList<Music>>()
     val music = MutableLiveData<Music>()
-    val musicCover = MutableLiveData<Bitmap?>()
+    val musicCover = MutableLiveData<Bitmap>()
     val musicIndex = MutableLiveData(-1)
     val playingProcess = MutableLiveData(0f)
-    var musicState: MusicState = MusicState.STOP
+    var playerState: MutableLiveData<PlayerState> = MutableLiveData(PlayerState.STOP)
         private set
-
-    enum class MusicState {
-        PLAYING,
-        PAUSE,
-        STOP
-    }
+    var currentIndex: Int = -1
+        private set
+        get() = musicIndex.value ?: -1
 
     fun setBinder(musicService: IMusicService) {
         musicService.setCallback(callback)
@@ -44,13 +43,13 @@ class HomeViewModel(
     }
 
     fun updateIndexContent() {
-        launchInIOThread { service ->
-            mainHandler.post { playList.value = service.playList }
+        launchBackground { service ->
+            mainHandler.post { playList.value = service.playList ?: mutableListOf() }
         }
     }
 
     fun selectCurrentMusic() {
-        launchInIOThread { service ->
+        launchBackground { service ->
             val currentMusic = service.currentMusic
             val currentCover = service.musicCover
             val currentIndex = service.currentIndex
@@ -64,49 +63,49 @@ class HomeViewModel(
 
     val play: (Int) -> Unit = { index ->
         musicCover.value = null
-        launchInIOThread { service ->
+        launchBackground { service ->
             var currentMusic: Music?
             var currentCover: Bitmap?
-            service.play(index).let { music ->
-                currentMusic = music
+            with(service.play(index)) {
+                currentMusic = this
             }
-            service.musicCover.let { cover ->
-                currentCover = cover
+            with(service.musicCover) {
+                currentCover = this
             }
             mainHandler.post {
                 music.value = currentMusic
                 musicCover.value = currentCover
-                musicState = MusicState.PLAYING
+                playerState.value = PlayerState.PLAYING
             }
         }
     }
 
     val pause = {
-        launchInIOThread { service ->
+        launchBackground { service ->
             service.pause()
-            if (musicState == MusicState.PAUSE) return@launchInIOThread
-            musicState = MusicState.PAUSE
+            if (playerState.value == PlayerState.PAUSE) return@launchBackground
+            mainHandler.post { playerState.value = PlayerState.PAUSE }
         }
     }
 
     val resume = {
-        launchInIOThread { service ->
+        launchBackground { service ->
             service.resume()
-            if (musicState == MusicState.PLAYING) return@launchInIOThread
-            musicState = MusicState.PLAYING
+            if (playerState.value == PlayerState.PLAYING) return@launchBackground
+            mainHandler.post { playerState.value = PlayerState.PLAYING }
         }
     }
 
-    fun playNext() {
-        viewModelScope.launch {
-            musicService?.playNext()?.apply {
+    val playNext = {
+        launchBackground { service ->
+            with(service.playNext()) {
                 music.value = this
             }
         }
     }
 
     fun setPlayMode(playMode: PlayMode) {
-        launchInIOThread { service ->
+        launchBackground { service ->
             service.setPlayMode(playMode.value)
         }
     }
@@ -129,7 +128,7 @@ class HomeViewModel(
     private fun remoteSeekTo(target: Float) {
         val duration = music.value?.duration
         duration ?: return
-        launchInIOThread { service ->
+        launchBackground { service ->
             service.seekTo((duration * target).toLong())
         }
     }
@@ -138,11 +137,11 @@ class HomeViewModel(
         playingProcess.value = 0f
     }
 
-    private fun launchInIOThread(block: (IMusicService) -> Unit) {
+    private fun launchBackground(block: (IMusicService) -> Unit) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                musicService?.apply {
-                    block(this)
+                musicService?.let { service ->
+                    block(service)
                 }
             }
         }
@@ -180,4 +179,10 @@ class HomeViewModel(
             selectCurrentMusic()
         }
     }
+}
+
+enum class PlayerState {
+    PLAYING,
+    PAUSE,
+    STOP
 }

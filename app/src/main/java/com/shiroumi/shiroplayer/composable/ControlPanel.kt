@@ -1,28 +1,22 @@
 package com.shiroumi.shiroplayer.composable
 
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.shiroumi.shiroplayer.viewmodel.HomeViewModel
+import com.shiroumi.shiroplayer.viewmodel.PlayerViewModel
 import com.shiroumi.shiroplayer.viewmodel.PlayerState
 
 private val panelHeight = 54.dp
@@ -30,7 +24,7 @@ private val buttonWidth = 60.dp
 
 @Composable
 fun ControlPanel(
-    viewModel: HomeViewModel,
+    viewModel: PlayerViewModel,
     modifier: Modifier
 ) {
     Box(
@@ -57,7 +51,10 @@ fun ControlPanel(
                     val playerState by playerState.observeAsState(PlayerState.STOP)
 
                     PanelButton(PanelButtonType.TYPE_PLAY_PREV) {
-
+                        playPrev.withClickFilter(200L) {
+                            clearCover()
+                            moveToPrev
+                        }
                     }
 
                     PanelButton(
@@ -68,14 +65,26 @@ fun ControlPanel(
                         }
                     ) {
                         when (playerState) {
-                            PlayerState.STOP -> play(currentIndex)
-                            PlayerState.PAUSE -> resume()
-                            PlayerState.PLAYING -> pause()
+                            PlayerState.STOP -> play.withClickFilter(200L)
+                            PlayerState.PAUSE -> resume.withClickFilter(100L)
+                            PlayerState.PLAYING -> pause.withClickFilter(100L)
                             else -> Log.wtf("control panel", "unexpected playerState case")
                         }
                     }
+
                     PanelButton(PanelButtonType.TYPE_PLAY_NEXT) {
-                        playNext()
+                        playNext.withClickFilter(200L) {
+                            clearCover()
+                            moveToNext
+                        }
+                    }
+
+                    PanelButton(PanelButtonType.TYPE_STOP) {
+                        stop.withClickFilter(100L) {
+                            clearCover()
+                            resetProcess()
+                            resetIndex()
+                        }
                     }
                 }
             }

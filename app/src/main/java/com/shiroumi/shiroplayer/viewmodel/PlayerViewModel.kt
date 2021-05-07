@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @SuppressLint("NullSafeMutableLiveData")
-class HomeViewModel(
+class PlayerViewModel(
     savedStateHandle: SavedStateHandle
 ) : BaseStatefulViewModel(
     savedStateHandle
@@ -25,6 +25,7 @@ class HomeViewModel(
     private var musicService: IMusicService? = null
     private var mainHandler = Handler(Looper.getMainLooper())
     private var seeking = false
+    private var playerIsBusy = false
 
     val playList = MutableLiveData<MutableList<Music>>()
     val music = MutableLiveData<Music>()
@@ -35,7 +36,7 @@ class HomeViewModel(
         private set
     var currentIndex: Int = -1
         private set
-        get() = musicIndex.value ?: -1
+        get() = musicIndex.value ?: field
 
     fun setBinder(musicService: IMusicService) {
         musicService.setCallback(callback)
@@ -57,16 +58,16 @@ class HomeViewModel(
                 music.value = currentMusic
                 musicCover.value = currentCover
                 musicIndex.value = currentIndex
+                if (playerIsBusy) playerIsBusy = false
             }
         }
     }
 
-    val play: (Int) -> Unit = { index ->
-        musicCover.value = null
+    val play = {
         launchBackground { service ->
             var currentMusic: Music?
             var currentCover: Bitmap?
-            with(service.play(index)) {
+            with(service.play(currentIndex)) {
                 currentMusic = this
             }
             with(service.musicCover) {
@@ -76,6 +77,7 @@ class HomeViewModel(
                 music.value = currentMusic
                 musicCover.value = currentCover
                 playerState.value = PlayerState.PLAYING
+                if (playerIsBusy) playerIsBusy = false
             }
         }
     }
@@ -84,7 +86,10 @@ class HomeViewModel(
         launchBackground { service ->
             service.pause()
             if (playerState.value == PlayerState.PAUSE) return@launchBackground
-            mainHandler.post { playerState.value = PlayerState.PAUSE }
+            mainHandler.post {
+                playerState.value = PlayerState.PAUSE
+                if (playerIsBusy) playerIsBusy = false
+            }
         }
     }
 
@@ -92,15 +97,53 @@ class HomeViewModel(
         launchBackground { service ->
             service.resume()
             if (playerState.value == PlayerState.PLAYING) return@launchBackground
-            mainHandler.post { playerState.value = PlayerState.PLAYING }
+            mainHandler.post {
+                playerState.value = PlayerState.PLAYING
+                if (playerIsBusy) playerIsBusy = false
+            }
         }
     }
 
     val playNext = {
         launchBackground { service ->
+            var currentMusic: Music?
+            var currentCover: Bitmap?
             with(service.playNext()) {
-                music.value = this
+                currentMusic = this
             }
+            with(service.musicCover) {
+                currentCover = this
+            }
+            mainHandler.post {
+                music.value = currentMusic
+                musicCover.value = currentCover
+                playerState.value = PlayerState.PLAYING
+                if (playerIsBusy) playerIsBusy = false
+            }
+        }
+    }
+
+    val playPrev = {
+        launchBackground { service ->
+            var currentMusic: Music?
+            var currentCover: Bitmap?
+            with(service.playPrev()) {
+                currentMusic = this
+            }
+            with(service.musicCover) {
+                currentCover = this
+            }
+            mainHandler.post {
+                music.value = currentMusic
+                musicCover.value = currentCover
+                playerState.value = PlayerState.PLAYING
+                if (playerIsBusy) playerIsBusy = false
+            }
+        }
+    }
+    val stop = {
+        launchBackground { service ->
+            service.stop()
         }
     }
 
@@ -108,10 +151,6 @@ class HomeViewModel(
         launchBackground { service ->
             service.setPlayMode(playMode.value)
         }
-    }
-
-    fun clearCoverNow() {
-        musicCover.value = null
     }
 
     fun localSeekTo(target: Float) {
@@ -133,8 +172,29 @@ class HomeViewModel(
         }
     }
 
-    fun resetProcessNow() {
+    fun clearCover() {
+        musicCover.value = null
+    }
+
+    fun resetProcess() {
         playingProcess.value = 0f
+    }
+
+    fun resetIndex() {
+        musicIndex.value = -1
+    }
+
+    val moveToNext = moveToIndex(currentIndex + 1)
+
+    val moveToPrev = moveToIndex(currentIndex - 1)
+
+    fun moveToIndex(index: Int) {
+        val playList = playList.value ?: return
+        if (index < 0) {
+            musicIndex.value = playList.size - 1
+        } else {
+            musicIndex.value = index
+        }
     }
 
     private fun launchBackground(block: (IMusicService) -> Unit) {
@@ -147,17 +207,16 @@ class HomeViewModel(
         }
     }
 
-    fun (() -> Unit).withClickFilter(time: Long) {
-        mainHandler.removeCallbacksAndMessages(null)
-        mainHandler.postDelayed(this, time)
-    }
-
-    fun ((Int) -> Unit).withClickFilter(index: Int, time: Long, before: (() -> Unit)? = {}) {
+    fun (() -> Unit).withClickFilter(time: Long, before: (() -> Unit)? = {}) {
         before?.invoke()
-        mainHandler.removeCallbacksAndMessages(null)
-        mainHandler.postDelayed({
-            this(index)
-        }, time)
+        if (playerIsBusy) return
+        with(mainHandler) {
+            removeCallbacksAndMessages(null)
+            postDelayed({
+                this@withClickFilter()
+                playerIsBusy = true
+            }, time)
+        }
     }
 
     override fun onCleared() {

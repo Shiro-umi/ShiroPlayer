@@ -55,10 +55,17 @@ class Remoter(
     }
 
     fun play(index: Int = -1) {
-        val doPlay: () -> Unit = {
+        val playList = playList ?: return
+        if (playList.isEmpty()) return
+        doWithNewIndexAfterStop(
+            when {
+                index == -1 -> 0
+                index < -1 -> playList.size - 1
+                else -> index
+            }
+        ) {
             currentMusic?.play(context = context)
         }
-        doWithNewIndexAfterStop(if (index == -1) 0 else index) { doPlay() }
     }
 
     fun playNext() {
@@ -79,6 +86,11 @@ class Remoter(
 
     fun seekTo(target: Long) {
         player.doSeekTo(target.toInt())
+    }
+
+    fun stop() {
+        currentIndex = -1
+        player.doStop()
     }
 
     private fun doWithNewIndexAfterStop(newIndex: Int, block: () -> Unit) {

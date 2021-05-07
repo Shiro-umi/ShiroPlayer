@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.util.toRange
 import com.shiroumi.shiroplayer.Music
-import com.shiroumi.shiroplayer.viewmodel.HomeViewModel
+import com.shiroumi.shiroplayer.viewmodel.PlayerViewModel
 import com.shiroumi.shiroplayer.viewmodel.PlayerState
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -39,7 +39,7 @@ import kotlin.math.*
 @ExperimentalContracts
 @Composable
 fun IndexList(
-    viewModel: HomeViewModel
+    viewModel: PlayerViewModel
 ) {
     val indexContent: MutableList<Music>
             by viewModel.playList.observeAsState(mutableListOf())
@@ -79,11 +79,11 @@ fun IndexList(
                             }
                             return@ListItem
                         }
-                        play.withClickFilter(index, 200L) {
-                            clearCoverNow()
-                            resetProcessNow()
+                        moveToIndex(i)
+                        play.withClickFilter(200L) {
+                            clearCover()
+                            resetProcess()
                         }
-                        musicIndex.value = i
                         offset = positionInBox
                     }
                 }
@@ -100,7 +100,7 @@ fun ListItem(
     music: Music,
     index: Int,
     state: CardState,
-    viewModel: HomeViewModel,
+    viewModel: PlayerViewModel,
     selectListener: (Int, IntOffset) -> Unit
 ) {
     val elevation by animateFloatAsState(
@@ -165,7 +165,7 @@ fun ListItem(
 
 @Composable
 fun ProcessBar(
-    viewModel: HomeViewModel,
+    viewModel: PlayerViewModel,
     cover: Bitmap,
     gradientEnd: Color
 ) {

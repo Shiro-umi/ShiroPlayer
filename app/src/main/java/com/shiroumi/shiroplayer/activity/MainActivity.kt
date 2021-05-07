@@ -11,14 +11,14 @@ import com.shiroumi.shiroplayer.HOME
 import com.shiroumi.shiroplayer.arch.activity.BaseActivity
 import com.shiroumi.shiroplayer.components.PlayMode
 import com.shiroumi.shiroplayer.composable.Home
-import com.shiroumi.shiroplayer.viewmodel.HomeViewModel
+import com.shiroumi.shiroplayer.viewmodel.PlayerViewModel
 import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalContracts
 @ExperimentalComposeUiApi
 class MainActivity : BaseActivity() {
 
-    private val viewModel: HomeViewModel by viewModels()
+    private val viewModel: PlayerViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

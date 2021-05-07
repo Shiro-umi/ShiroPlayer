@@ -37,6 +37,11 @@ class MusicService : BaseService() {
             return remoter.currentMusic
         }
 
+        override fun playPrev(): Music? {
+            remoter.playPrev()
+            return remoter.currentMusic
+        }
+
         override fun pause() {
             remoter.pause()
         }
@@ -47,6 +52,10 @@ class MusicService : BaseService() {
 
         override fun seekTo(target: Long) {
             remoter.seekTo(target)
+        }
+
+        override fun stop() {
+            remoter.stop()
         }
 
         override fun getCurrentMusic(): Music? {

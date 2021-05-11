@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.IMusicServiceCommunication
 import com.shiroumi.shiroplayer.Music
+import com.shiroumi.shiroplayer.MusicInfo
 import com.shiroumi.shiroplayer.arch.viewmodel.BaseStatefulViewModel
 import com.shiroumi.shiroplayer.components.PlayMode
 import kotlinx.coroutines.Dispatchers
@@ -28,15 +29,44 @@ class PlayerViewModel(
     private var playerIsBusy = false
 
     val playList = MutableLiveData<MutableList<Music>>()
-    val music = MutableLiveData<Music>()
-    val musicCover = MutableLiveData<Bitmap>()
-    val musicIndex = MutableLiveData(-1)
-    val playingProcess = MutableLiveData(0f)
-    var playerState: MutableLiveData<PlayerState> = MutableLiveData(PlayerState.STOP)
-        private set
-    var currentIndex: Int = -1
-        private set
-        get() = musicIndex.value ?: field
+
+    val observableMusic = MutableLiveData<Music>()
+    var music: Music?
+        get() = observableMusic.value
+        set(value) {
+            observableMusic.value = value
+        }
+
+    val observableCover = MutableLiveData<Bitmap>()
+    var cover: Bitmap?
+        get() = observableCover.value
+        set(value) {
+            observableCover.value = value
+        }
+
+    val observableIndex = MutableLiveData(Int.MIN_VALUE)
+    var index: Int
+        get() = observableIndex.value ?: Int.MIN_VALUE
+        set(value) {
+            observableIndex.value = value
+        }
+
+    val observableProgress = MutableLiveData(0f)
+    var progress: Float
+        get() = observableProgress.value ?: 0f
+        set(value) {
+            observableProgress.value = value
+        }
+
+    val observablePlayerState = MutableLiveData(PlayerState.STOP)
+    var playerState: PlayerState
+        get() = observablePlayerState.value ?: PlayerState.STOP
+        set(value) {
+            observablePlayerState.value = value
+        }
+
+    var clickFilterRunnable: () -> Unit = {}
+    var operatingRunnable: () -> Unit = {}
 
     fun setBinder(musicService: IMusicService) {
         musicService.setCallback(callback)
@@ -51,13 +81,8 @@ class PlayerViewModel(
 
     fun selectCurrentMusic() {
         launchBackground { service ->
-            val currentMusic = service.currentMusic
-            val currentCover = service.musicCover
-            val currentIndex = service.currentIndex
             mainHandler.post {
-                music.value = currentMusic
-                musicCover.value = currentCover
-                musicIndex.value = currentIndex
+                service.currentMusicInfo.update()
                 if (playerIsBusy) playerIsBusy = false
             }
         }
@@ -65,19 +90,36 @@ class PlayerViewModel(
 
     val play = {
         launchBackground { service ->
-            var currentMusic: Music?
-            var currentCover: Bitmap?
-            with(service.play(currentIndex)) {
-                currentMusic = this
+            with(service.play(index)) {
+                mainHandler.post {
+                    update()
+                    playerState = PlayerState.PLAYING
+                    if (playerIsBusy) playerIsBusy = false
+                }
             }
-            with(service.musicCover) {
-                currentCover = this
+        }
+    }
+
+    val playNext = {
+        launchBackground { service ->
+            with(service.playNext()) {
+                mainHandler.post {
+                    update()
+                    playerState = PlayerState.PLAYING
+                    if (playerIsBusy) playerIsBusy = false
+                }
             }
-            mainHandler.post {
-                music.value = currentMusic
-                musicCover.value = currentCover
-                playerState.value = PlayerState.PLAYING
-                if (playerIsBusy) playerIsBusy = false
+        }
+    }
+
+    val playPrev = {
+        launchBackground { service ->
+            with(service.playPrev()) {
+                mainHandler.post {
+                    update()
+                    playerState = PlayerState.PLAYING
+                    if (playerIsBusy) playerIsBusy = false
+                }
             }
         }
     }
@@ -85,9 +127,9 @@ class PlayerViewModel(
     val pause = {
         launchBackground { service ->
             service.pause()
-            if (playerState.value == PlayerState.PAUSE) return@launchBackground
+            if (observablePlayerState.value == PlayerState.PAUSE) return@launchBackground
             mainHandler.post {
-                playerState.value = PlayerState.PAUSE
+                playerState = PlayerState.PAUSE
                 if (playerIsBusy) playerIsBusy = false
             }
         }
@@ -96,54 +138,23 @@ class PlayerViewModel(
     val resume = {
         launchBackground { service ->
             service.resume()
-            if (playerState.value == PlayerState.PLAYING) return@launchBackground
+            if (observablePlayerState.value == PlayerState.PLAYING) return@launchBackground
             mainHandler.post {
-                playerState.value = PlayerState.PLAYING
+                playerState = PlayerState.PLAYING
                 if (playerIsBusy) playerIsBusy = false
             }
         }
     }
 
-    val playNext = {
-        launchBackground { service ->
-            var currentMusic: Music?
-            var currentCover: Bitmap?
-            with(service.playNext()) {
-                currentMusic = this
-            }
-            with(service.musicCover) {
-                currentCover = this
-            }
-            mainHandler.post {
-                music.value = currentMusic
-                musicCover.value = currentCover
-                playerState.value = PlayerState.PLAYING
-                if (playerIsBusy) playerIsBusy = false
-            }
-        }
-    }
-
-    val playPrev = {
-        launchBackground { service ->
-            var currentMusic: Music?
-            var currentCover: Bitmap?
-            with(service.playPrev()) {
-                currentMusic = this
-            }
-            with(service.musicCover) {
-                currentCover = this
-            }
-            mainHandler.post {
-                music.value = currentMusic
-                musicCover.value = currentCover
-                playerState.value = PlayerState.PLAYING
-                if (playerIsBusy) playerIsBusy = false
-            }
-        }
-    }
     val stop = {
         launchBackground { service ->
-            service.stop()
+            service.stop().apply {
+                mainHandler.post {
+                    playerState = PlayerState.STOP
+                    resetProcess()
+                    if (playerIsBusy) playerIsBusy = false
+                }
+            }
         }
     }
 
@@ -156,8 +167,9 @@ class PlayerViewModel(
     fun localSeekTo(target: Float) {
         if (!seeking) seeking = true
         mainHandler.apply {
+            removeCallbacks {  }
             removeCallbacksAndMessages(null)
-            playingProcess.value = target
+            observableProgress.value = target
             mainHandler.postDelayed({
                 remoteSeekTo(target)
             }, 200L)
@@ -165,7 +177,7 @@ class PlayerViewModel(
     }
 
     private fun remoteSeekTo(target: Float) {
-        val duration = music.value?.duration
+        val duration = music?.duration
         duration ?: return
         launchBackground { service ->
             service.seekTo((duration * target).toLong())
@@ -173,38 +185,39 @@ class PlayerViewModel(
     }
 
     fun clearCover() {
-        musicCover.value = null
+        cover = null
     }
 
     fun resetProcess() {
-        playingProcess.value = 0f
+        progress = 0f
     }
 
-    fun resetIndex() {
-        musicIndex.value = -1
+    fun moveToNext() {
+        moveToIndex(if (index == Int.MIN_VALUE) 0 else index + 1)
     }
 
-    val moveToNext = moveToIndex(currentIndex + 1)
-
-    val moveToPrev = moveToIndex(currentIndex - 1)
+    fun moveToPrev() {
+        moveToIndex(if (index != Int.MIN_VALUE) index - 1 else index)
+    }
 
     fun moveToIndex(index: Int) {
         val playList = playList.value ?: return
-        if (index < 0) {
-            musicIndex.value = playList.size - 1
-        } else {
-            musicIndex.value = index
+        when {
+            (index >= playList.size) -> {
+                this.index = 0
+            }
+            (index < 0) -> {
+                this.index = playList.size - 1
+            }
+            else -> this.index = index
         }
     }
 
-    private fun launchBackground(block: (IMusicService) -> Unit) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                musicService?.let { service ->
-                    block(service)
-                }
-            }
-        }
+    private fun MusicInfo?.update() {
+        this ?: return
+        observableMusic.value = music
+        observableCover.value = cover
+        observableIndex.value = index
     }
 
     fun (() -> Unit).withClickFilter(time: Long, before: (() -> Unit)? = {}) {
@@ -219,6 +232,16 @@ class PlayerViewModel(
         }
     }
 
+    private fun launchBackground(block: (IMusicService) -> Unit) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                musicService?.let { service ->
+                    block(service)
+                }
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         mainHandler.removeCallbacksAndMessages(null)
@@ -227,15 +250,15 @@ class PlayerViewModel(
     private val callback = object : IMusicServiceCommunication.Stub() {
         override fun onMusicPlaying(process: Float) {
             if (seeking) return
-            mainHandler.post { playingProcess.value = process }
+            mainHandler.post { observableProgress.value = process }
         }
 
         override fun onSeekDone() {
             seeking = false
         }
 
-        override fun onMusicChanged() {
-            selectCurrentMusic()
+        override fun onMusicChanged(musicInfo: MusicInfo?) {
+            musicInfo.update()
         }
     }
 }

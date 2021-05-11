@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import com.shiroumi.shiroplayer.Music
+import com.shiroumi.shiroplayer.MusicInfo
 
 
 enum class PlayMode(val value: Int) {
@@ -18,13 +19,13 @@ class Remoter(
     contentResolver: ContentResolver
 ) {
     private val selector = MusicSelector(contentResolver)
-    var currentIndex = -1
+    var currentIndex = Int.MIN_VALUE
     private var retriever: MediaMetadataRetriever? = null
     var playList: List<Music>? = null
         private set
 
     var currentMusic: Music? = null
-        get() = if (currentIndex == -1) null else playList?.get(currentIndex)
+        get() = if (currentIndex == Int.MIN_VALUE) null else playList?.get(currentIndex)
         private set
 
     var currentMusicCover: Bitmap? = null
@@ -34,6 +35,10 @@ class Remoter(
         }
         private set
 
+    var currentMusicInfo: MusicInfo? = null
+        get() = MusicInfo(currentMusic, currentMusicCover, currentIndex)
+        private set
+
     var playMode: Int = PlayMode.NORMAL.value
         set(value) {
             field = value
@@ -41,7 +46,13 @@ class Remoter(
                 PlayMode.NORMAL.value -> completeCallback = {
                     ++currentIndex
                     currentMusic?.play(context)
-                    changeMusicCallback?.invoke()
+                    changeMusicCallback?.invoke(
+                        MusicInfo(
+                            currentMusic,
+                            currentMusicCover,
+                            currentIndex
+                        )
+                    )
                 }
                 PlayMode.SINGLE.value -> {
                 }
@@ -54,26 +65,31 @@ class Remoter(
         playList = selector.updatePlayList()
     }
 
-    fun play(index: Int = -1) {
-        val playList = playList ?: return
-        if (playList.isEmpty()) return
+    fun play(index: Int): MusicInfo? {
+        val playList = playList ?: return null
+        if (playList.isEmpty()) return null
         doWithNewIndexAfterStop(
             when {
-                index == -1 -> 0
-                index < -1 -> playList.size - 1
+                (index >= playList.size) -> 0
+                (index < 0) -> playList.size - 1
                 else -> index
             }
         ) {
             currentMusic?.play(context = context)
         }
+        return MusicInfo(
+            currentMusic,
+            currentMusicCover,
+            currentIndex
+        )
     }
 
-    fun playNext() {
-        play(++currentIndex)
+    fun playNext(): MusicInfo? {
+        return play(if (currentIndex == Int.MIN_VALUE) 0 else ++currentIndex)
     }
 
-    fun playPrev() {
-        play(--currentIndex)
+    fun playPrev(): MusicInfo? {
+        return play(if (currentIndex != Int.MIN_VALUE) --currentIndex else currentIndex)
     }
 
     fun pause() {
@@ -89,7 +105,6 @@ class Remoter(
     }
 
     fun stop() {
-        currentIndex = -1
         player.doStop()
     }
 

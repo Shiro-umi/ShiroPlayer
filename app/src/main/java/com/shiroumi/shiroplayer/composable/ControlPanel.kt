@@ -16,8 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.shiroumi.shiroplayer.viewmodel.PlayerViewModel
 import com.shiroumi.shiroplayer.viewmodel.PlayerState
+import com.shiroumi.shiroplayer.viewmodel.PlayerViewModel
 
 private val panelHeight = 54.dp
 private val buttonWidth = 60.dp
@@ -48,12 +48,12 @@ fun ControlPanel(
                     .wrapContentWidth()
             ) {
                 with(viewModel) {
-                    val playerState by playerState.observeAsState(PlayerState.STOP)
+                    val playerState by observablePlayerState.observeAsState(PlayerState.STOP)
 
                     PanelButton(PanelButtonType.TYPE_PLAY_PREV) {
-                        playPrev.withClickFilter(200L) {
+                        play.withClickFilter(200L) {
                             clearCover()
-                            moveToPrev
+                            moveToPrev()
                         }
                     }
 
@@ -73,18 +73,14 @@ fun ControlPanel(
                     }
 
                     PanelButton(PanelButtonType.TYPE_PLAY_NEXT) {
-                        playNext.withClickFilter(200L) {
+                        play.withClickFilter(200L) {
                             clearCover()
-                            moveToNext
+                            moveToNext()
                         }
                     }
 
                     PanelButton(PanelButtonType.TYPE_STOP) {
-                        stop.withClickFilter(100L) {
-                            clearCover()
-                            resetProcess()
-                            resetIndex()
-                        }
+                        stop.withClickFilter(100L)
                     }
                 }
             }

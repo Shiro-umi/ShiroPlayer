@@ -1,6 +1,7 @@
 package com.shiroumi.shiroplayer.composable
 
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
@@ -44,7 +45,7 @@ fun IndexList(
     val indexContent: MutableList<Music>
             by viewModel.playList.observeAsState(mutableListOf())
 
-    val selected by viewModel.musicIndex.observeAsState(-1)
+    val selected by viewModel.observableIndex.observeAsState(Int.MIN_VALUE)
     var offset by remember { mutableStateOf(IntOffset(0, 0)) }
 
     CustomBox(
@@ -72,17 +73,17 @@ fun IndexList(
                 ) { i, positionInBox ->
                     with(viewModel) {
                         if (i == selected) {
-                            when (playerState.value) {
+                            when (playerState) {
                                 PlayerState.PLAYING -> pause.withClickFilter(100L)
                                 PlayerState.PAUSE -> resume.withClickFilter(100L)
-                                else -> pause.withClickFilter(100L)
+                                PlayerState.STOP -> play.withClickFilter(100L)
                             }
                             return@ListItem
                         }
-                        moveToIndex(i)
                         play.withClickFilter(200L) {
                             clearCover()
                             resetProcess()
+                            moveToIndex(i)
                         }
                         offset = positionInBox
                     }
@@ -120,7 +121,8 @@ fun ListItem(
             elevation = elevation.dp
         ) {
             Box {
-                val cover = viewModel.musicCover.observeAsState().value
+                // 兼容contract
+                val cover = viewModel.observableCover.observeAsState().value
                 val gradientEnd by animateColorAsState(
                     targetValue = if (cover == null) Color.White else Color.Transparent,
                     animationSpec = spring(Spring.DampingRatioNoBouncy, Spring.StiffnessVeryLow)
@@ -181,7 +183,7 @@ fun ProcessBar(
     )
 
     var progressWidth by remember { mutableStateOf(0f) }
-    val process = viewModel.playingProcess.observeAsState(0f).value
+    val process by viewModel.observableProgress.observeAsState(0f)
     Box(
         modifier = backGroundModifier
             .background(

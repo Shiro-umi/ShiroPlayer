@@ -7,6 +7,7 @@ import android.os.IBinder
 import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.IMusicServiceCommunication
 import com.shiroumi.shiroplayer.Music
+import com.shiroumi.shiroplayer.MusicInfo
 import com.shiroumi.shiroplayer.arch.service.BaseService
 import com.shiroumi.shiroplayer.components.*
 
@@ -27,19 +28,20 @@ class MusicService : BaseService() {
     }
 
     private val token = object : IMusicService.Stub() {
-        override fun play(int: Int): Music? {
-            remoter.play(int)
-            return remoter.currentMusic
+        override fun play(int: Int): MusicInfo? {
+            return remoter.play(int)
         }
 
-        override fun playNext(): Music? {
-            remoter.playNext()
-            return remoter.currentMusic
+        override fun playNext(): MusicInfo? {
+            return remoter.playNext()
         }
 
-        override fun playPrev(): Music? {
-            remoter.playPrev()
-            return remoter.currentMusic
+        override fun playPrev(): MusicInfo? {
+            return remoter.playPrev()
+        }
+
+        override fun getCurrentMusicInfo(): MusicInfo? {
+            return remoter.currentMusicInfo
         }
 
         override fun pause() {
@@ -78,7 +80,7 @@ class MusicService : BaseService() {
             callback?.apply {
                 processCallback = { process -> onMusicPlaying(process) }
                 seekCallback = { onSeekDone() }
-                changeMusicCallback = { onMusicChanged() }
+                changeMusicCallback = { musicInfo -> onMusicChanged(musicInfo) }
             }
         }
 

@@ -1,12 +1,13 @@
 // IMusicService.aidl
 package com.shiroumi.shiroplayer;
 import com.shiroumi.shiroplayer.IMusicServiceCommunication;
-parcelable Music;
+import com.shiroumi.shiroplayer.IBeans;
 
 interface IMusicService {
-    Music play(int index);
-    Music playNext();
-    Music playPrev();
+    MusicInfo play(int index);
+    MusicInfo playNext();
+    MusicInfo playPrev();
+    MusicInfo getCurrentMusicInfo();
     void pause();
     void resume();
     void seekTo(long position);
@@ -15,6 +16,6 @@ interface IMusicService {
     int getCurrentIndex();
     List<Music> getPlayList();
     Bitmap getMusicCover();
-    void setCallback(IMusicServiceCommunication callback);
+    void setCallback(in IMusicServiceCommunication callback);
     void setPlayMode(int playMode);
 }

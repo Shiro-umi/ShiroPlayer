@@ -7,11 +7,12 @@ import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
 import com.shiroumi.shiroplayer.Music
+import com.shiroumi.shiroplayer.MusicInfo
 
 val processPostHandler = Handler(Looper.getMainLooper())
 var processCallback: ((Float) -> Unit)? = null
 var seekCallback: (() -> Unit)? = null
-var changeMusicCallback: (() -> Unit)? = null
+var changeMusicCallback: ((MusicInfo?) -> Unit)? = null
 
 var completeCallback: (() -> Unit)? = null
 

@@ -9,10 +9,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.IMusicServiceCommunication
-import com.shiroumi.shiroplayer.Music
 import com.shiroumi.shiroplayer.MusicInfo
 import com.shiroumi.shiroplayer.arch.viewmodel.BaseStatefulViewModel
 import com.shiroumi.shiroplayer.components.PlayMode
+import com.shiroumi.shiroplayer.room.entities.Music
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,7 +30,7 @@ class PlayerViewModel(
 
     val playList = MutableLiveData<MutableList<Music>>()
 
-    val observableMusic = MutableLiveData<Music>()
+    private val observableMusic = MutableLiveData<Music>()
     var music: Music?
         get() = observableMusic.value
         set(value) {
@@ -65,68 +65,62 @@ class PlayerViewModel(
             observablePlayerState.value = value
         }
 
-    var clickFilterRunnable: () -> Unit = {}
-    var operatingRunnable: () -> Unit = {}
-
     fun setBinder(musicService: IMusicService) {
         musicService.setCallback(callback)
         this.musicService = musicService
     }
 
     fun updateIndexContent() {
-        launchBackground { service ->
-            mainHandler.post { playList.value = service.playList ?: mutableListOf() }
+        launchBackground {
+            mainHandler.post { this@PlayerViewModel.playList.value = playList ?: mutableListOf() }
         }
     }
 
     fun selectCurrentMusic() {
-        launchBackground { service ->
+        launchBackground {
             mainHandler.post {
-                service.currentMusicInfo.update()
+                currentMusicInfo.update()
                 if (playerIsBusy) playerIsBusy = false
             }
         }
     }
 
     val play = {
-        launchBackground { service ->
-            with(service.play(index)) {
-                mainHandler.post {
-                    update()
-                    playerState = PlayerState.PLAYING
-                    if (playerIsBusy) playerIsBusy = false
-                }
+        launchBackground {
+            val musicInfo = play(index)
+            mainHandler.post {
+                musicInfo.update()
+                playerState = PlayerState.PLAYING
+                if (playerIsBusy) playerIsBusy = false
             }
         }
     }
 
     val playNext = {
-        launchBackground { service ->
-            with(service.playNext()) {
-                mainHandler.post {
-                    update()
-                    playerState = PlayerState.PLAYING
-                    if (playerIsBusy) playerIsBusy = false
-                }
+        launchBackground {
+            val musicInfo = playNext()
+            mainHandler.post {
+                musicInfo.update()
+                playerState = PlayerState.PLAYING
+                if (playerIsBusy) playerIsBusy = false
             }
         }
     }
 
     val playPrev = {
-        launchBackground { service ->
-            with(service.playPrev()) {
-                mainHandler.post {
-                    update()
-                    playerState = PlayerState.PLAYING
-                    if (playerIsBusy) playerIsBusy = false
-                }
+        launchBackground {
+            val musicInfo = playPrev()
+            mainHandler.post {
+                musicInfo.update()
+                playerState = PlayerState.PLAYING
+                if (playerIsBusy) playerIsBusy = false
             }
         }
     }
 
     val pause = {
-        launchBackground { service ->
-            service.pause()
+        launchBackground {
+            pause()
             if (observablePlayerState.value == PlayerState.PAUSE) return@launchBackground
             mainHandler.post {
                 playerState = PlayerState.PAUSE
@@ -136,8 +130,8 @@ class PlayerViewModel(
     }
 
     val resume = {
-        launchBackground { service ->
-            service.resume()
+        launchBackground {
+            resume()
             if (observablePlayerState.value == PlayerState.PLAYING) return@launchBackground
             mainHandler.post {
                 playerState = PlayerState.PLAYING
@@ -147,27 +141,24 @@ class PlayerViewModel(
     }
 
     val stop = {
-        launchBackground { service ->
-            service.stop().apply {
-                mainHandler.post {
-                    playerState = PlayerState.STOP
-                    resetProcess()
-                    if (playerIsBusy) playerIsBusy = false
-                }
+        launchBackground {
+            stop()
+            mainHandler.post {
+                playerState = PlayerState.STOP
+                resetProcess()
+                if (playerIsBusy) playerIsBusy = false
             }
         }
     }
 
     fun setPlayMode(playMode: PlayMode) {
-        launchBackground { service ->
-            service.setPlayMode(playMode.value)
-        }
+        launchBackground { setPlayMode(playMode.value) }
     }
 
     fun localSeekTo(target: Float) {
         if (!seeking) seeking = true
         mainHandler.apply {
-            removeCallbacks {  }
+            removeCallbacks { }
             removeCallbacksAndMessages(null)
             observableProgress.value = target
             mainHandler.postDelayed({
@@ -179,9 +170,7 @@ class PlayerViewModel(
     private fun remoteSeekTo(target: Float) {
         val duration = music?.duration
         duration ?: return
-        launchBackground { service ->
-            service.seekTo((duration * target).toLong())
-        }
+        launchBackground { seekTo((duration * target).toLong()) }
     }
 
     fun clearCover() {
@@ -213,6 +202,11 @@ class PlayerViewModel(
         }
     }
 
+    fun refreshMusicDb() {
+        playList.value = mutableListOf()
+        launchBackground { refreshMusic() }
+    }
+
     private fun MusicInfo?.update() {
         this ?: return
         observableMusic.value = music
@@ -232,11 +226,11 @@ class PlayerViewModel(
         }
     }
 
-    private fun launchBackground(block: (IMusicService) -> Unit) {
+    private fun launchBackground(block: IMusicService.() -> Unit) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                musicService?.let { service ->
-                    block(service)
+                musicService?.run {
+                    block(this)
                 }
             }
         }
@@ -259,6 +253,10 @@ class PlayerViewModel(
 
         override fun onMusicChanged(musicInfo: MusicInfo?) {
             musicInfo.update()
+        }
+
+        override fun onMusicRefreshDone() {
+            updateIndexContent()
         }
     }
 }

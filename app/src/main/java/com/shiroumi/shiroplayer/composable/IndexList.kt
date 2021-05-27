@@ -1,7 +1,6 @@
 package com.shiroumi.shiroplayer.composable
 
 import android.graphics.Bitmap
-import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
@@ -30,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.util.toRange
-import com.shiroumi.shiroplayer.Music
+import com.shiroumi.shiroplayer.room.entities.Music
 import com.shiroumi.shiroplayer.viewmodel.PlayerViewModel
 import com.shiroumi.shiroplayer.viewmodel.PlayerState
 import kotlin.contracts.ExperimentalContracts
@@ -57,12 +56,13 @@ fun IndexList(
     ) {
         val listState = rememberLazyListState()
         LazyColumn(
-            state = listState
+            state = listState,
+            contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 80.dp)
         ) {
             itemsIndexed(
                 items = indexContent,
                 key = { index, item ->
-                    "$index:${item._id}"
+                    "$index:${item.musicId}"
                 }
             ) { index, item ->
                 ListItem(
@@ -145,7 +145,7 @@ fun ListItem(
                         modifier = Modifier
                             .padding(16.dp, 8.dp, 8.dp, 0.dp)
                             .wrapContentHeight(),
-                        text = music.title,
+                        text = music.musicTitle,
                         fontSize = 16.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis

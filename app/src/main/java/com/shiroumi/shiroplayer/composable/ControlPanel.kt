@@ -97,7 +97,7 @@ private fun PanelButton(
         modifier = Modifier
             .fillMaxHeight()
             .width(buttonWidth)
-            .rippleClickable(behavior)
+            .rippleClickable(behavior = behavior)
     ) {
         Icon(
             modifier = Modifier.align(Alignment.Center),

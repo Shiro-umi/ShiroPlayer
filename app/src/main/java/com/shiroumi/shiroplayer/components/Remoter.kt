@@ -2,10 +2,23 @@ package com.shiroumi.shiroplayer.components
 
 import android.content.ContentResolver
 import android.content.Context
+import android.database.Cursor
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
-import com.shiroumi.shiroplayer.Music
+import android.media.MediaScannerConnection
+import android.net.Uri
+import android.os.Environment
+import android.provider.ContactsContract
+import android.util.Log
+import androidx.documentfile.provider.DocumentFile
+import androidx.room.Room
+import com.shiroumi.shiroplayer.room.entities.Music
 import com.shiroumi.shiroplayer.MusicInfo
+import com.shiroumi.shiroplayer.room.MusicDatabase
+import com.shiroumi.shiroplayer.room.RoomManager
+import com.shiroumi.shiroplayer.room.entities.Playlist
+import com.shiroumi.shiroplayer.service.MusicService
+import kotlinx.coroutines.*
 
 
 enum class PlayMode(val value: Int) {
@@ -39,6 +52,9 @@ class Remoter(
         get() = MusicInfo(currentMusic, currentMusicCover, currentIndex)
         private set
 
+    var currentPlaylist: Playlist? = null
+        private set
+
     var playMode: Int = PlayMode.NORMAL.value
         set(value) {
             field = value
@@ -61,8 +77,12 @@ class Remoter(
             }
         }
 
+    var onRefreshMusicDone: (() -> Unit)? = null
+
     init {
-        playList = selector.updatePlayList()
+        playList = selector.getLocalMusicList { fromMediaStore ->
+            addAllMusic(fromMediaStore)
+        }
     }
 
     fun play(index: Int): MusicInfo? {
@@ -112,5 +132,19 @@ class Remoter(
         player.doStop()
         currentIndex = newIndex
         block.invoke()
+    }
+
+    fun refreshMusic() {
+        selector.refreshMusic {
+            playList = this
+            onRefreshMusicDone?.invoke()
+        }
+    }
+
+    fun updateMusicStore(uri: Uri) {
+        val files = DocumentFile.fromTreeUri(context, uri)?.listFiles()
+        files?.forEach {
+            Log.wtf("asdasdasd", it.name)
+        }
     }
 }

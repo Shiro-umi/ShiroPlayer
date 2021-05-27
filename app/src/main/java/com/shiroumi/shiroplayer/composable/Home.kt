@@ -15,12 +15,12 @@ import kotlin.contracts.ExperimentalContracts
 @ExperimentalComposeUiApi
 @Composable
 fun Home(
-    navCtrl: NavHostController,
     viewModel: PlayerViewModel
 ) {
     Box {
         Column {
             TitleBar(
+                viewModel = viewModel,
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()

@@ -4,10 +4,11 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.renderscript.Allocation
 import android.renderscript.Element
 import android.renderscript.RenderScript
-import com.shiroumi.shiroplayer.Music
+import com.shiroumi.shiroplayer.room.entities.Music
 import android.renderscript.ScriptIntrinsicBlur
 
 
@@ -15,8 +16,8 @@ fun Music.getCover(
     context: Context,
     retriever: MediaMetadataRetriever? = MediaMetadataRetriever()
 ): Bitmap? {
-    uri ?: return null
-    retriever?.setDataSource(context, uri)
+    if (uri.isBlank()) return null
+    retriever?.setDataSource(context, Uri.parse(uri))
     val bitmapData = retriever?.embeddedPicture ?: return null
     val cover = BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData.size)
     retriever.release()

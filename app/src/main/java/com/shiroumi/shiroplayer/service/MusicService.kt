@@ -3,19 +3,22 @@ package com.shiroumi.shiroplayer.service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.IBinder
 import com.shiroumi.shiroplayer.IMusicService
 import com.shiroumi.shiroplayer.IMusicServiceCommunication
-import com.shiroumi.shiroplayer.Music
+import com.shiroumi.shiroplayer.room.entities.Music
 import com.shiroumi.shiroplayer.MusicInfo
 import com.shiroumi.shiroplayer.arch.service.BaseService
 import com.shiroumi.shiroplayer.components.*
+import com.shiroumi.shiroplayer.room.RoomManager
 
 class MusicService : BaseService() {
     lateinit var remoter: Remoter
 
     override fun attachBaseContext(newBase: Context?) {
         super.attachBaseContext(newBase)
+        RoomManager.init(this)
         remoter = Remoter(this, contentResolver)
     }
 
@@ -28,6 +31,10 @@ class MusicService : BaseService() {
     }
 
     private val token = object : IMusicService.Stub() {
+        override fun setPlayMode(playMode: Int) {
+            remoter.playMode = playMode
+        }
+
         override fun play(int: Int): MusicInfo? {
             return remoter.play(int)
         }
@@ -76,16 +83,21 @@ class MusicService : BaseService() {
             return remoter.currentMusicCover
         }
 
+        override fun refreshMusic() {
+            remoter.refreshMusic()
+        }
+
+        override fun updateMusicStore(uri: String?) {
+            remoter.updateMusicStore(Uri.parse(uri))
+        }
+
         override fun setCallback(callback: IMusicServiceCommunication?) {
             callback?.apply {
                 processCallback = { process -> onMusicPlaying(process) }
-                seekCallback = { onSeekDone() }
+                seekCallback = this::onSeekDone
                 changeMusicCallback = { musicInfo -> onMusicChanged(musicInfo) }
+                remoter.onRefreshMusicDone = this::onMusicRefreshDone
             }
-        }
-
-        override fun setPlayMode(playMode: Int) {
-            remoter.playMode = playMode
         }
     }
 }

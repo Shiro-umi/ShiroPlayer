@@ -1,8 +1,11 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext.kotlin_version = "1.4.30"
+    ext.kotlin_version = "1.4.32"
     ext.nav_version = "2.3.4"
     ext.media2_version = "1.1.2"
+    ext.room_version = "2.3.0"
+    ext.compose_version = "1.0.0-beta07"
+
     repositories {
         maven {url 'https://maven.aliyun.com/repository/google'}
         maven {url 'https://maven.aliyun.com/repository/public'}
@@ -10,7 +13,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.0-alpha15'
+        classpath 'com.android.tools.build:gradle:7.0.0-beta02'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
         classpath 'com.google.dagger:hilt-android-gradle-plugin:2.28-alpha'

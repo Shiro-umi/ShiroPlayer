@@ -4,9 +4,10 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import com.shiroumi.shiroplayer.Music
+import com.shiroumi.shiroplayer.room.entities.Music
 import com.shiroumi.shiroplayer.MusicInfo
 
 val processPostHandler = Handler(Looper.getMainLooper())
@@ -37,11 +38,10 @@ fun Music.play(
     context: Context
 ) {
     if (player.isPlaying) return
-    val musicUri = uri
-    musicUri ?: return
+    if (uri.isBlank())  return
     with(player) {
         reset()
-        setDataSource(context, musicUri)
+        setDataSource(context, Uri.parse(uri))
         prepare()
     }
 }

@@ -1,13 +1,10 @@
 package com.shiroumi.shiroplayer.activity
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.shiroumi.shiroplayer.HOME
 import com.shiroumi.shiroplayer.arch.activity.BaseActivity
 import com.shiroumi.shiroplayer.components.PlayMode
 import com.shiroumi.shiroplayer.composable.Home
@@ -19,6 +16,9 @@ import kotlin.contracts.ExperimentalContracts
 class MainActivity : BaseActivity() {
 
     private val viewModel: PlayerViewModel by viewModels()
+    private val safLauncher = registerForActivityResult(SafResContract()) { result ->
+        Log.wtf("asdasdasd", result)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,23 +26,32 @@ class MainActivity : BaseActivity() {
             viewModel.setBinder(it)
             viewModel.updateIndexContent()
             viewModel.selectCurrentMusic()
-            // todo 根据保存的设置选择PlayMode
             viewModel.setPlayMode(PlayMode.NORMAL)
         }
+
         setContent {
-            val navCtrl = rememberNavController()
-            NavHost(
-                navController = navCtrl,
-                startDestination = HOME
-            ) {
-                composable(HOME) {
-                    Home(
-                        navCtrl = navCtrl,
-                        viewModel = viewModel
-                    )
-                }
-            }
+//            val navCtrl = rememberNavController()
+//            NavHost(
+//                navController = navCtrl,
+//                startDestination = HOME
+//            ) {
+//                composable(HOME) {
+//                    Home(
+//                        navCtrl = navCtrl,
+//                        viewModel = viewModel
+//                    )
+//                }
+//
+//                composable(SETTING) {
+//                    // todo setting
+//                }
+//            }
+            Home(viewModel = viewModel)
         }
+    }
+
+    fun launchSaf() {
+        safLauncher.launch(null)
     }
 }
 

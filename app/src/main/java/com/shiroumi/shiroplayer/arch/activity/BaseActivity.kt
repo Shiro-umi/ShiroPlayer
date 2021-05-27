@@ -1,6 +1,7 @@
 package com.shiroumi.shiroplayer.arch.activity
 
 import android.Manifest
+import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -9,10 +10,12 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.provider.DocumentsContract
 import android.util.Log
 import android.view.View
 import android.view.WindowInsetsController
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import com.shiroumi.shiroplayer.IMusicService
@@ -30,6 +33,20 @@ open class BaseActivity : AppCompatActivity() {
 
         override fun onServiceDisconnected(name: ComponentName?) {
             Log.d("music", "onServiceDisconnected")
+        }
+    }
+
+    class SafResContract : ActivityResultContract<String?, String?>() {
+        override fun createIntent(context: Context, input: String?): Intent {
+            return Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+                putExtra("android.content.extra.SHOW_ADVANCED", true)
+            }
+        }
+
+        override fun parseResult(resultCode: Int, intent: Intent?): String? {
+            return intent?.data?.run {
+                toString()
+            }
         }
     }
 

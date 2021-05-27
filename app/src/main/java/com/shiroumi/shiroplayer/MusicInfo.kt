@@ -3,6 +3,7 @@ package com.shiroumi.shiroplayer
 import android.graphics.Bitmap
 import android.os.Parcel
 import android.os.Parcelable
+import com.shiroumi.shiroplayer.room.entities.Music
 
 data class MusicInfo(
     val music: Music?,

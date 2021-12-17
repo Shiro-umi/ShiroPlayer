@@ -1,21 +1,24 @@
 package com.shiroumi.shiroplayer.components
 
-import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import com.shiroumi.shiroplayer.room.entities.Music
-import com.shiroumi.shiroplayer.MusicInfo
+import com.shiroumi.shiroplayer.arch.application
+import com.shiroumi.shiroplayer.composable.common.toFile
+import com.shiroumi.shiroplayer.service.serviceCallback
+import java.io.File
 
 val processPostHandler = Handler(Looper.getMainLooper())
-var processCallback: ((Float) -> Unit)? = null
-var seekCallback: (() -> Unit)? = null
-var changeMusicCallback: ((MusicInfo?) -> Unit)? = null
 
 var completeCallback: (() -> Unit)? = null
+
+var mediaFile: File? = null
+
+val MediaPlayer.process: Float
+    get() = currentPosition.toFloat() / duration
 
 val player: MediaPlayer by lazy {
     MediaPlayer().apply {
@@ -34,15 +37,18 @@ val player: MediaPlayer by lazy {
     }
 }
 
-fun Music.play(
-    context: Context
-) {
-    if (player.isPlaying) return
-    if (uri.isBlank())  return
-    with(player) {
+fun Uri.play() = with(player) {
+    try {
+        if (isPlaying) return
         reset()
-        setDataSource(context, Uri.parse(uri))
-        prepare()
+        mediaFile = this@play.toFile(application)
+        mediaFile?.let {
+            processPostHandler.removeCallbacksAndMessages(null)
+            setDataSource(it.absolutePath)
+            prepare()
+        } ?: serviceCallback.onUriResourceUnavilable()
+    } catch (e: Exception) {
+        serviceCallback.onUriResourceUnavilable()
     }
 }
 
@@ -61,21 +67,20 @@ fun MediaPlayer.doResume() {
 fun MediaPlayer.doStop() {
     if (!isPlaying) return
     processPostHandler.removeCallbacksAndMessages(null)
+    mediaFile?.delete()
+    mediaFile = null
     stop()
 }
 
 fun MediaPlayer.doSeekTo(target: Int) {
+    this.duration
     seekTo(target)
-    seekCallback?.invoke()
+    serviceCallback.onSeekDone()
 }
 
 fun MediaPlayer.updateProcess() {
     processPostHandler.postDelayed({
-        processCallback?.invoke(getProcess())
+        serviceCallback.onMusicPlaying(process)
         updateProcess()
-    }, 100L)
-}
-
-fun MediaPlayer.getProcess(): Float {
-    return currentPosition.toFloat() / duration
+    }, 500L)
 }

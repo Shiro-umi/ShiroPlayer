@@ -1,12 +1,10 @@
 package com.shiroumi.shiroplayer.room.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 
-@Entity(
-    tableName = "playlist_music_cross_ref",
-    primaryKeys = ["playlistId", "musicId"]
-)
+@Entity(primaryKeys = ["name", "uri"])
 data class PlaylistMusicCrossRef(
-    val playlistId: Long,
-    val musicId: Long
+    @ColumnInfo(index = true) val name: String,
+    @ColumnInfo(index = true) val uri: String
 )

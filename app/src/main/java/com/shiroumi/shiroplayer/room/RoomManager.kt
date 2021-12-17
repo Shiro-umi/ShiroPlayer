@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Room
 
 object RoomManager {
+
     private const val DB_NAME = "shiro-umi.db"
+
     lateinit var db: MusicDatabase
 
     fun init(context: Context) {

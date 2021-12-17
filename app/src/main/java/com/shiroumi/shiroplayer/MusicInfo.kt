@@ -14,8 +14,7 @@ data class MusicInfo(
         parcel.readParcelable(Music::class.java.classLoader),
         parcel.readParcelable(Bitmap::class.java.classLoader),
         parcel.readValue(Int::class.java.classLoader) as? Int
-    ) {
-    }
+    )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeParcelable(music, flags)

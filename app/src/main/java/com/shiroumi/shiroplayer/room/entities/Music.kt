@@ -8,8 +8,6 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "music")
 data class Music(
-    @PrimaryKey(autoGenerate = true)
-    var musicId: Long = -1,
     @ColumnInfo(name = "title")
     var musicTitle: String = "",
     @ColumnInfo(name = "artist")
@@ -18,12 +16,11 @@ data class Music(
     var album: String = "",
     @ColumnInfo(name = "duration")
     var duration: Float = 0f,
-    @ColumnInfo(name = "uri")
+    @PrimaryKey
     var uri: String = ""
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
-        parcel.readLong(),
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
@@ -32,16 +29,28 @@ data class Music(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(musicId)
-        parcel.writeString(musicTitle)
-        parcel.writeString(artist)
-        parcel.writeString(album)
-        parcel.writeFloat(duration)
-        parcel.writeString(uri)
+        with(parcel) {
+            writeString(musicTitle)
+            writeString(artist)
+            writeString(album)
+            writeFloat(duration)
+            writeString(uri)
+        }
     }
 
     override fun describeContents(): Int {
         return 0
+    }
+
+    fun readFromParcel(parcel: Parcel) {
+        with(parcel) {
+            readLong()
+            readString()
+            readString()
+            readString()
+            readFloat()
+            readString()
+        }
     }
 
     companion object CREATOR : Parcelable.Creator<Music> {
@@ -52,5 +61,26 @@ data class Music(
         override fun newArray(size: Int): Array<Music?> {
             return arrayOfNulls(size)
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is Music) return false
+        if (musicTitle == other.musicTitle &&
+                album == other.album &&
+                artist == other.artist &&
+                duration == other.duration &&
+                uri == other.uri) {
+            return true
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        var result = musicTitle.hashCode()
+        result = 31 * result + artist.hashCode()
+        result = 31 * result + album.hashCode()
+        result = 31 * result + duration.hashCode()
+        result = 31 * result + uri.hashCode()
+        return result
     }
 }

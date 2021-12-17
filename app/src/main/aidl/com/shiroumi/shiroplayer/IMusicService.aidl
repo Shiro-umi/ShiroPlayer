@@ -1,8 +1,8 @@
 // IMusicService.aidl
 package com.shiroumi.shiroplayer;
 import com.shiroumi.shiroplayer.IMusicServiceCommunication;
-import com.shiroumi.shiroplayer.IBeans;
-import com.shiroumi.shiroplayer.room.entities.RoomEntities;
+import com.shiroumi.shiroplayer.MusicInfo;
+import com.shiroumi.shiroplayer.room.entities.Music;
 
 interface IMusicService {
     // play mode
@@ -26,7 +26,9 @@ interface IMusicService {
 
     // database
     void refreshMusic();
+    void refreshLocalMusic();
     void updateMusicStore(String uri);
+    void deleteMusic(out Music music);
 
     // callback
     void setCallback(in IMusicServiceCommunication callback);
